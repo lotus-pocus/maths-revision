@@ -995,6 +995,158 @@ function OrderedDataTable({ s, unit }) {
   );
 }
 
+// ── Real World tab — clean by default, detail behind expander ─────────────
+function HospitalMode({ scenario, scenarioIdx, setScenario }) {
+  const [deep, setDeep] = useState(false);
+
+  // reset expander when scenario changes
+  React.useEffect(() => setDeep(false), [scenarioIdx]);
+
+  return (
+    <div>
+      {/* Scenario picker */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "20px" }}>
+        {HOSPITAL_SCENARIOS.map((s, i) => (
+          <button
+            key={s.id}
+            onClick={() => setScenario(i)}
+            style={{ padding: "12px 16px", background: scenarioIdx === i ? C.accentDim : C.surface, border: `1px solid ${scenarioIdx === i ? C.accent : C.border}`, borderRadius: "10px", cursor: "pointer", textAlign: "left", color: scenarioIdx === i ? C.accent : C.muted, fontSize: "13px", fontWeight: scenarioIdx === i ? "700" : "400" }}
+          >
+            <span style={{ marginRight: "8px" }}>{s.icon}</span>
+            <span style={{ fontWeight: 700 }}>{s.world}:</span> {s.title} —{" "}
+            <span style={{ fontWeight: 400 }}>{s.subtitle}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* One-line hook — always visible */}
+      <div style={{ background: C.surface, borderLeft: `3px solid ${C.accent}`, borderRadius: "10px", padding: "12px 14px", marginBottom: "16px" }}>
+        <p style={{ fontSize: "13px", color: C.text, lineHeight: 1.6, margin: 0 }}>
+          <strong style={{ color: C.accent }}>{scenario.icon} {scenario.world}:</strong>{" "}
+          {scenario.context.split(".")[0]}. A box plot shows the spread at a glance — the chart below compares two sets of data side by side.
+        </p>
+      </div>
+
+      {/* The box plot — always visible */}
+      <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: "12px", padding: "20px 16px", marginBottom: "16px" }}>
+        <p style={{ fontSize: "13px", fontWeight: "700", color: C.white, marginBottom: "4px" }}>{scenario.title}</p>
+        <p style={{ fontSize: "12px", color: C.muted, marginBottom: "16px" }}>{scenario.subtitle}</p>
+        <BoxPlotSVG
+          sets={scenario.sets}
+          scaleMin={Math.min(...scenario.sets.map(s => s.min)) - 5}
+          scaleMax={Math.max(...scenario.sets.map(s => s.max)) + 5}
+          unit={scenario.unit}
+        />
+      </div>
+
+      {/* Quick key facts — always visible, 2 lines per set */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "16px" }}>
+        {scenario.sets.map((s) => (
+          <div key={s.label} style={{ background: C.surface, borderLeft: `3px solid ${s.color}`, borderRadius: "10px", padding: "10px 14px", display: "flex", gap: "16px", flexWrap: "wrap" }}>
+            <span style={{ fontSize: "12px", fontWeight: "700", color: s.color, minWidth: "120px" }}>{s.label}</span>
+            <span style={{ fontSize: "12px", color: C.muted }}>Typical: <strong style={{ color: s.color }}>{s.median} {scenario.unit}</strong></span>
+            <span style={{ fontSize: "12px", color: C.muted }}>Middle 50%: <strong style={{ color: s.color }}>{s.q1}–{s.q3}</strong></span>
+            <span style={{ fontSize: "12px", color: C.muted }}>IQR: <strong style={{ color: s.color }}>{s.q3 - s.q1}</strong></span>
+          </div>
+        ))}
+      </div>
+
+      {/* Dig deeper expander */}
+      <button
+        onClick={() => setDeep(!deep)}
+        style={{ width: "100%", padding: "12px 16px", background: deep ? C.accentDim : C.surface, border: `1px solid ${deep ? C.accent : C.border}`, borderRadius: "10px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: deep ? "16px" : "0" }}
+      >
+        <span style={{ fontSize: "13px", fontWeight: "700", color: deep ? C.accent : C.text }}>
+          🔍 Dig deeper — understand every number
+        </span>
+        <span style={{ fontSize: "12px", color: C.muted }}>{deep ? "▲ Hide" : "▼ Show"}</span>
+      </button>
+
+      {/* All the detail — hidden by default */}
+      {deep && (
+        <div>
+          {/* Why box plots / why not mean */}
+          <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: "12px", padding: "14px 16px", marginBottom: "16px" }}>
+            <p style={{ fontSize: "11px", fontWeight: "700", color: C.accent, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "6px" }}>
+              {scenario.icon} {scenario.world} — why they use box plots
+            </p>
+            <p style={{ fontSize: "13px", color: C.text, lineHeight: 1.7, margin: "0 0 10px" }}>
+              {scenario.context}
+            </p>
+            <div style={{ background: C.accentDim, borderRadius: "8px", padding: "10px 12px", borderLeft: `3px solid ${C.accent}` }}>
+              <p style={{ fontSize: "12px", color: C.accent, margin: 0, lineHeight: 1.6 }}>
+                <strong>Why not just use the mean?</strong> {scenario.whyBoxPlot}
+              </p>
+            </div>
+          </div>
+
+          {/* Plain English per set */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "16px" }}>
+            {scenario.sets.map((s) => {
+              const iqr = s.q3 - s.q1;
+              const unit = scenario.unit;
+              return (
+                <div key={s.label} style={{ background: C.surface, borderLeft: `3px solid ${s.color}`, borderRadius: "10px", padding: "12px 14px" }}>
+                  <p style={{ fontSize: "12px", fontWeight: "700", color: s.color, marginBottom: "6px" }}>
+                    {s.label} — what the numbers mean
+                  </p>
+                  <p style={{ fontSize: "13px", color: C.text, lineHeight: 1.8, margin: 0 }}>
+                    🔹 The <strong>shortest</strong> recorded was <strong style={{ color: C.text }}>{s.min} {unit}</strong> — that's the best case.<br />
+                    🔹 A <strong>typical</strong> result was around <strong style={{ color: s.color }}>{s.median} {unit}</strong> — half were below this, half above.<br />
+                    🔹 The <strong>middle half</strong> of all results fell between <strong style={{ color: s.color }}>{s.q1}</strong> and <strong style={{ color: s.color }}>{s.q3} {unit}</strong> — that's a spread of <strong style={{ color: s.color }}>{iqr} {unit}</strong>. This is the IQR.<br />
+                    🔹 The <strong>longest</strong> recorded was <strong style={{ color: C.text }}>{s.max} {unit}</strong> — the worst case.
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Ordered data tables */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "16px" }}>
+            {scenario.sets.map((s) => (
+              <OrderedDataTable key={s.label} s={s} unit={scenario.unit} />
+            ))}
+          </div>
+
+          {/* 5-number breakdown */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "16px" }}>
+            {scenario.sets.map((s) => (
+              <div key={s.label} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: "12px", padding: "14px" }}>
+                <p style={{ fontSize: "12px", fontWeight: "700", color: s.color, marginBottom: "10px" }}>{s.label}</p>
+                {[
+                  { label: "Min",    val: s.min,        plain: "Lowest value" },
+                  { label: "Q1",     val: s.q1,         plain: "25% below this" },
+                  { label: "Median", val: s.median,     plain: "Typical (middle)" },
+                  { label: "Q3",     val: s.q3,         plain: "75% below this" },
+                  { label: "Max",    val: s.max,        plain: "Highest value" },
+                  { label: "IQR",    val: s.q3 - s.q1, plain: "Spread of middle 50%" },
+                ].map(({ label, val, plain }) => (
+                  <div key={label} style={{ paddingBottom: "6px", marginBottom: "6px", borderBottom: `1px solid ${C.border}20` }}>
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                      <span style={{ fontSize: "12px", color: C.muted }}>{label}</span>
+                      <span style={{ fontSize: "12px", fontWeight: "700", color: label === "Median" || label === "IQR" ? s.color : C.text }}>{val}</span>
+                    </div>
+                    <p style={{ fontSize: "11px", color: C.muted, margin: "1px 0 0", fontStyle: "italic" }}>{plain}</p>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+
+          {/* Compare table */}
+          <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: "12px", padding: "14px 16px", marginBottom: "16px" }}>
+            <p style={{ fontSize: "12px", fontWeight: "700", color: C.white, marginBottom: "2px" }}>Side-by-side comparison</p>
+            <CompareTable sets={scenario.sets} unit={scenario.unit} />
+          </div>
+
+          {/* Exam sentence builder */}
+          <ExamSentenceBuilder sets={scenario.sets} />
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main component ────────────────────────────────────────────────────────
 export default function BoxPlotVisualiser() {
   const [mode, setMode]             = useState("hospital"); // "hospital" | "exam" | "build"
@@ -1039,112 +1191,7 @@ export default function BoxPlotVisualiser() {
 
         {/* ── HOSPITAL MODE ── */}
         {mode === "hospital" && (
-          <div>
-            {/* Scenario picker */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "20px" }}>
-              {HOSPITAL_SCENARIOS.map((s, i) => (
-                <button
-                  key={s.id}
-                  onClick={() => setScenario(i)}
-                  style={{ padding: "12px 16px", background: scenarioIdx === i ? C.accentDim : C.surface, border: `1px solid ${scenarioIdx === i ? C.accent : C.border}`, borderRadius: "10px", cursor: "pointer", textAlign: "left", color: scenarioIdx === i ? C.accent : C.muted, fontSize: "13px", fontWeight: scenarioIdx === i ? "700" : "400" }}
-                >
-                  <span style={{ marginRight: "8px" }}>{s.icon}</span>
-                  <span style={{ fontWeight: 700 }}>{s.world}:</span> {s.title} — <span style={{ fontWeight: 400 }}>{s.subtitle}</span>
-                </button>
-              ))}
-            </div>
-
-            {/* Context card */}
-            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: "12px", padding: "14px 16px", marginBottom: "20px" }}>
-              <p style={{ fontSize: "11px", fontWeight: "700", color: C.accent, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "6px" }}>
-                {scenario.icon} {scenario.world} — why they use box plots
-              </p>
-              <p style={{ fontSize: "13px", color: C.text, lineHeight: 1.7, margin: "0 0 10px" }}>
-                {scenario.context}
-              </p>
-              <div style={{ background: C.accentDim, borderRadius: "8px", padding: "10px 12px", borderLeft: `3px solid ${C.accent}` }}>
-                <p style={{ fontSize: "12px", color: C.accent, margin: 0, lineHeight: 1.6 }}>
-                  <strong>Why not just use the mean?</strong> {scenario.whyBoxPlot}
-                </p>
-              </div>
-            </div>
-
-            {/* The box plot */}
-            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: "12px", padding: "20px 16px", marginBottom: "16px" }}>
-              <p style={{ fontSize: "13px", fontWeight: "700", color: C.white, marginBottom: "4px" }}>{scenario.title}</p>
-              <p style={{ fontSize: "12px", color: C.muted, marginBottom: "16px" }}>{scenario.subtitle}</p>
-              <BoxPlotSVG
-                sets={scenario.sets}
-                scaleMin={Math.min(...scenario.sets.map(s => s.min)) - 5}
-                scaleMax={Math.max(...scenario.sets.map(s => s.max)) + 5}
-                unit={scenario.unit}
-              />
-            </div>
-
-            {/* Ordered data tables — one per set, collapsed by default */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "16px" }}>
-              {scenario.sets.map((s) => (
-                <OrderedDataTable key={s.label} s={s} unit={scenario.unit} />
-              ))}
-            </div>
-
-            {/* Plain English summary — one card per data set */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "16px" }}>
-              {scenario.sets.map((s) => {
-                const iqr = s.q3 - s.q1;
-                const unit = scenario.unit;
-                return (
-                  <div key={s.label} style={{ background: C.surface, borderLeft: `3px solid ${s.color}`, borderRadius: "10px", padding: "12px 14px" }}>
-                    <p style={{ fontSize: "12px", fontWeight: "700", color: s.color, marginBottom: "6px" }}>
-                      {s.label} — what the numbers mean
-                    </p>
-                    <p style={{ fontSize: "13px", color: C.text, lineHeight: 1.8, margin: 0 }}>
-                      🔹 The <strong>shortest</strong> recorded was <strong style={{ color: C.text }}>{s.min} {unit}</strong> — that's the best case.<br />
-                      🔹 A <strong>typical</strong> result was around <strong style={{ color: s.color }}>{s.median} {unit}</strong> — half were below this, half above.<br />
-                      🔹 The <strong>middle half</strong> of all results fell between <strong style={{ color: s.color }}>{s.q1}</strong> and <strong style={{ color: s.color }}>{s.q3} {unit}</strong> — that's a spread of <strong style={{ color: s.color }}>{iqr} {unit}</strong>. This is the IQR.<br />
-                      🔹 The <strong>longest</strong> recorded was <strong style={{ color: C.text }}>{s.max} {unit}</strong> — the worst case.
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* The 5-number breakdown */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "16px" }}>
-              {scenario.sets.map((s) => (
-                <div key={s.label} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: "12px", padding: "14px" }}>
-                  <p style={{ fontSize: "12px", fontWeight: "700", color: s.color, marginBottom: "10px" }}>{s.label}</p>
-                  {[
-                    { label: "Min",    val: s.min,        plain: "Lowest value" },
-                    { label: "Q1",     val: s.q1,         plain: "25% below this" },
-                    { label: "Median", val: s.median,     plain: "Typical (middle)" },
-                    { label: "Q3",     val: s.q3,         plain: "75% below this" },
-                    { label: "Max",    val: s.max,        plain: "Highest value" },
-                    { label: "IQR",    val: s.q3 - s.q1, plain: "Spread of middle 50%" },
-                  ].map(({ label, val, plain }) => (
-                    <div key={label} style={{ paddingBottom: "6px", marginBottom: "6px", borderBottom: `1px solid ${C.border}20` }}>
-                      <div style={{ display: "flex", justifyContent: "space-between" }}>
-                        <span style={{ fontSize: "12px", color: C.muted }}>{label}</span>
-                        <span style={{ fontSize: "12px", fontWeight: "700", color: label === "Median" || label === "IQR" ? s.color : C.text }}>
-                          {val}
-                        </span>
-                      </div>
-                      <p style={{ fontSize: "11px", color: C.muted, margin: "1px 0 0", fontStyle: "italic" }}>{plain}</p>
-                    </div>
-                  ))}
-                </div>
-              ))}
-            </div>
-
-            {/* Compare table */}
-            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: "12px", padding: "14px 16px", marginBottom: "16px" }}>
-              <p style={{ fontSize: "12px", fontWeight: "700", color: C.white, marginBottom: "2px" }}>Side-by-side comparison</p>
-              <CompareTable sets={scenario.sets} unit={scenario.unit} />
-            </div>
-
-            {/* Exam sentence builder */}
-            <ExamSentenceBuilder sets={scenario.sets} />
-          </div>
+          <HospitalMode scenario={scenario} scenarioIdx={scenarioIdx} setScenario={setScenario} />
         )}
 
         {/* ── BUILD IT MODE ── */}
