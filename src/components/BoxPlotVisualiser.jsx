@@ -24,7 +24,8 @@ const HOSPITAL_SCENARIOS = [
     title: "A&E Waiting Times",
     subtitle: "Two hospital trusts, one Monday morning",
     unit: "minutes",
-    context: "Hospital managers use box plots to compare patient waiting times across different A&E departments. A lower median means shorter waits on average. The box in the middle shows where most waiting times fall — a narrow box means patients all wait roughly the same time, a wide box means it's unpredictable. NHS targets require 95% of patients to be seen within 4 hours, so spotting which trust is struggling matters enormously. (The width of that box is what we call the IQR — explained in the comparison table below.)",
+    context: "Hospital managers use box plots to compare patient waiting times across different A&E departments. A smaller IQR means more consistent service — patients can roughly predict how long they'll wait. A lower median means shorter waits on average. NHS targets require 95% of patients to be seen within 4 hours, so spotting which trust is struggling matters enormously.",
+    whyBoxPlot: "A single average (mean) would be misleading here — one very long wait drags the mean up. The median and IQR give a fairer picture of the typical patient experience.",
     sets: [
       { label: "St. Mary's Hospital", min: 12, q1: 28, median: 41, q3: 67, max: 124, color: "#00d4aa" },
       { label: "Royal Infirmary",     min: 8,  q1: 35, median: 58, q3: 72, max: 98,  color: "#f59e0b" },
@@ -415,16 +416,248 @@ const BUILD_QUESTIONS = [
 
 const TOLERANCE = 3; // how many units either side counts as correct
 
-// ── Drag-to-place box plot builder ────────────────────────────────────────
-function BuildIt() {
-  const [qIdx, setQIdx]           = useState(null);
-  const [checked, setChecked]     = useState(false);
-  const [showHint, setShowHint]   = useState(false);
-  const [showAnswer, setShowAnswer] = useState(false);
+// ── Stage 1: Tap-to-order ─────────────────────────────────────────────────
+function StageOrder({ q, onComplete }) {
+  const shuffled = React.useMemo(() =>
+    [...q.rawData].sort(() => Math.random() - 0.5), [q]);
 
-  // draggable values — keyed by handle name
-  const q = qIdx !== null ? BUILD_QUESTIONS[qIdx] : null;
+  const [remaining, setRemaining] = useState(shuffled);
+  const [ordered,   setOrdered]   = useState([]);
+  const [shake,     setShake]     = useState(null); // index of wrong tile
 
+  const sorted = [...q.rawData].sort((a, b) => a - b);
+  const nextCorrect = sorted[ordered.length];
+
+  const handleTap = (val, idx) => {
+    if (val === nextCorrect) {
+      setOrdered(prev => [...prev, val]);
+      setRemaining(prev => prev.filter((_, i) => i !== idx));
+    } else {
+      setShake(idx);
+      setTimeout(() => setShake(null), 500);
+    }
+  };
+
+  const allDone = ordered.length === q.rawData.length;
+
+  return (
+    <div>
+      {/* Progress indicator */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+        <p style={{ fontSize: "12px", fontWeight: "700", color: C.accent, margin: 0, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+          Stage 1 of 3 — Order It
+        </p>
+        <span style={{ fontSize: "12px", color: C.muted }}>{ordered.length} / {q.rawData.length} placed</span>
+      </div>
+
+      {/* Instruction */}
+      <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: "12px", padding: "14px 16px", marginBottom: "16px" }}>
+        <p style={{ fontSize: "12px", fontWeight: "700", color: C.accent, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "8px" }}>
+          {q.label} — {q.question}
+        </p>
+        <p style={{ fontSize: "13px", color: C.text, margin: 0 }}>
+          Tap the numbers <strong>one at a time</strong>, smallest first. Build the ordered list from left to right.
+        </p>
+      </div>
+
+      {/* Ordered row — fills as she taps */}
+      <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: "12px", padding: "14px 16px", marginBottom: "16px", minHeight: "56px" }}>
+        <p style={{ fontSize: "11px", color: C.muted, marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.06em" }}>Ordered list (smallest → largest)</p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", minHeight: "32px" }}>
+          {ordered.map((val, i) => {
+            const isMin    = i === 0;
+            const isMax    = i === q.rawData.length - 1;
+            const midIdx   = Math.floor(q.rawData.length / 2);
+            const isMedian = i === midIdx;
+            const q1idx    = Math.floor(q.rawData.length / 4);
+            const q3idx    = Math.floor((3 * q.rawData.length) / 4);
+            const isQ1     = i === q1idx;
+            const isQ3     = i === q3idx;
+            const highlight = isMedian ? "#ffffff" : (isQ1 || isQ3) ? C.accent : (isMin || isMax) ? C.muted : null;
+            return (
+              <div key={i} style={{
+                padding: "5px 10px", borderRadius: "6px",
+                background: highlight ? highlight + "20" : C.card,
+                border: `1px solid ${highlight || C.border}`,
+                fontSize: "13px", fontWeight: highlight ? "700" : "400",
+                color: highlight || C.text,
+                transition: "all 0.2s",
+              }}>
+                {val}
+                {isMin    && <span style={{ fontSize: "9px", display: "block", color: C.muted, lineHeight: 1 }}>min</span>}
+                {isQ1     && <span style={{ fontSize: "9px", display: "block", color: C.accent, lineHeight: 1 }}>Q1</span>}
+                {isMedian && <span style={{ fontSize: "9px", display: "block", color: "#ffffff", lineHeight: 1 }}>median</span>}
+                {isQ3     && <span style={{ fontSize: "9px", display: "block", color: C.accent, lineHeight: 1 }}>Q3</span>}
+                {isMax    && <span style={{ fontSize: "9px", display: "block", color: C.muted, lineHeight: 1 }}>max</span>}
+              </div>
+            );
+          })}
+          {ordered.length === 0 && (
+            <span style={{ fontSize: "12px", color: C.muted, fontStyle: "italic" }}>Tap a number below to start…</span>
+          )}
+        </div>
+      </div>
+
+      {/* Remaining tiles */}
+      {!allDone && (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "16px" }}>
+          {remaining.map((val, i) => (
+            <button
+              key={i}
+              onClick={() => handleTap(val, i)}
+              style={{
+                padding: "10px 16px", borderRadius: "8px",
+                background: shake === i ? "#ef444420" : C.card,
+                border: `1px solid ${shake === i ? C.red : C.border}`,
+                color: shake === i ? C.red : C.text,
+                fontSize: "14px", fontWeight: "600", cursor: "pointer",
+                transform: shake === i ? "translateX(4px)" : "none",
+                transition: "all 0.1s",
+              }}
+            >
+              {val}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Success state */}
+      {allDone && (
+        <div>
+          <div style={{ background: "#052e1c", border: "1px solid #16a34a40", borderRadius: "12px", padding: "14px 16px", marginBottom: "16px" }}>
+            <p style={{ fontSize: "14px", fontWeight: "700", color: "#4ade80", margin: "0 0 4px" }}>
+              ✓ Perfectly ordered!
+            </p>
+            <p style={{ fontSize: "13px", color: C.text, margin: 0 }}>
+              The labels have appeared automatically — notice where Min, Q1, Median, Q3 and Max sit in the list. Now let's use those values.
+            </p>
+          </div>
+          <button
+            onClick={onComplete}
+            style={{ width: "100%", padding: "14px", background: C.accent, color: C.bg, border: "none", borderRadius: "10px", fontSize: "14px", fontWeight: "700", cursor: "pointer" }}
+          >
+            Continue to Stage 2 →
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Stage 2: Identify the 5 values ───────────────────────────────────────
+function StageFive({ q, onComplete }) {
+  const sorted = [...q.rawData].sort((a, b) => a - b);
+  const KEYS = ["min", "q1", "median", "q3", "max"];
+  const LABELS = { min: "Minimum", q1: "Q1 (Lower Quartile)", median: "Median", q3: "Q3 (Upper Quartile)", max: "Maximum" };
+  const DESCRIPTIONS = {
+    min:    "The smallest value in the ordered list",
+    q1:     "The middle of the lower half",
+    median: "The middle value of the whole list",
+    q3:     "The middle of the upper half",
+    max:    "The largest value in the ordered list",
+  };
+
+  const [inputs, setInputs]   = useState({ min: "", q1: "", median: "", q3: "", max: "" });
+  const [checked, setChecked] = useState(false);
+
+  const results = KEYS.map(k => ({
+    key: k,
+    yours: parseInt(inputs[k]),
+    correct: q.answer[k],
+    ok: parseInt(inputs[k]) === q.answer[k],
+  }));
+  const allOk = results.every(r => r.ok);
+
+  return (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+        <p style={{ fontSize: "12px", fontWeight: "700", color: C.accent, margin: 0, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+          Stage 2 of 3 — Find the 5 Values
+        </p>
+      </div>
+
+      {/* Ordered list for reference */}
+      <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: "12px", padding: "14px 16px", marginBottom: "16px" }}>
+        <p style={{ fontSize: "11px", color: C.muted, marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.06em" }}>Your ordered list</p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+          {sorted.map((val, i) => (
+            <div key={i} style={{ padding: "5px 10px", borderRadius: "6px", background: C.card, border: `1px solid ${C.border}`, fontSize: "13px", color: C.text }}>
+              <span style={{ fontSize: "10px", color: C.muted, display: "block", lineHeight: 1 }}>{i + 1}</span>
+              {val}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Input fields */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "16px" }}>
+        {KEYS.map(k => {
+          const r = results.find(r => r.key === k);
+          const showResult = checked;
+          return (
+            <div key={k} style={{
+              background: showResult ? (r.ok ? "#052e1c" : "#2d0a0a") : C.card,
+              border: `1px solid ${showResult ? (r.ok ? "#16a34a60" : "#ef444460") : C.border}`,
+              borderRadius: "10px", padding: "12px 14px",
+              display: "flex", alignItems: "center", gap: "12px",
+            }}>
+              <div style={{ flex: 1 }}>
+                <p style={{ fontSize: "12px", fontWeight: "700", color: C.accent, margin: "0 0 2px" }}>{LABELS[k]}</p>
+                <p style={{ fontSize: "11px", color: C.muted, margin: 0 }}>{DESCRIPTIONS[k]}</p>
+              </div>
+              <input
+                type="number"
+                value={inputs[k]}
+                onChange={e => setInputs(prev => ({ ...prev, [k]: e.target.value }))}
+                disabled={checked && r.ok}
+                placeholder="?"
+                style={{
+                  width: "64px", padding: "8px", textAlign: "center",
+                  background: C.surface, border: `1px solid ${showResult ? (r.ok ? "#16a34a" : C.red) : C.border}`,
+                  borderRadius: "8px", color: showResult ? (r.ok ? "#4ade80" : C.red) : C.text,
+                  fontSize: "16px", fontWeight: "700",
+                }}
+              />
+              {showResult && (
+                <span style={{ fontSize: "18px", flexShrink: 0 }}>{r.ok ? "✓" : "✗"}</span>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Check */}
+      {!checked && (
+        <button
+          onClick={() => setChecked(true)}
+          style={{ width: "100%", padding: "13px", background: C.accent, color: C.bg, border: "none", borderRadius: "10px", fontSize: "14px", fontWeight: "700", cursor: "pointer", marginBottom: "8px" }}
+        >
+          Check my answers
+        </button>
+      )}
+
+      {checked && !allOk && (
+        <div style={{ background: C.surface, borderRadius: "10px", padding: "12px 14px", marginBottom: "12px" }}>
+          <p style={{ fontSize: "13px", color: C.text, margin: 0 }}>
+            Fix the values marked ✗ above, then continue.
+          </p>
+        </div>
+      )}
+
+      {checked && (
+        <button
+          onClick={() => { if (allOk) onComplete(q.answer); else { setChecked(false); } }}
+          style={{ width: "100%", padding: "13px", background: allOk ? C.accent : C.surface, color: allOk ? C.bg : C.muted, border: allOk ? "none" : `1px solid ${C.border}`, borderRadius: "10px", fontSize: "14px", fontWeight: "700", cursor: "pointer" }}
+        >
+          {allOk ? "Continue to Stage 3 →" : "Try again"}
+        </button>
+      )}
+    </div>
+  );
+}
+
+// ── Stage 3: Drag-to-place ────────────────────────────────────────────────
+function StageDrag({ q, onBack }) {
   const initVals = (q) => ({
     min:    q.scaleMin + Math.round((q.scaleMax - q.scaleMin) * 0.15),
     q1:     q.scaleMin + Math.round((q.scaleMax - q.scaleMin) * 0.30),
@@ -433,50 +666,33 @@ function BuildIt() {
     max:    q.scaleMin + Math.round((q.scaleMax - q.scaleMin) * 0.85),
   });
 
-  const [vals, setVals] = useState({});
-  const [dragging, setDragging] = useState(null); // { key, startX, startVal }
+  const [vals, setVals]           = useState(initVals(q));
+  const [dragging, setDragging]   = useState(null);
+  const [checked, setChecked]     = useState(false);
+  const [showHint, setShowHint]   = useState(false);
+  const [showAnswer, setShowAnswer] = useState(false);
   const svgRef = React.useRef(null);
 
-  const startQ = (idx) => {
-    const question = BUILD_QUESTIONS[idx];
-    setQIdx(idx);
-    setVals(initVals(question));
-    setChecked(false);
-    setShowHint(false);
-    setShowAnswer(false);
-  };
+  const reset = () => { setVals(initVals(q)); setChecked(false); setShowHint(false); setShowAnswer(false); };
 
-  const reset = () => {
-    if (q) { setVals(initVals(q)); setChecked(false); setShowHint(false); setShowAnswer(false); }
-  };
-
-  // SVG geometry
-  const SVG_W = 520;
-  const PAD_L = 24;
-  const PAD_R = 24;
+  const SVG_W = 520; const PAD_L = 24; const PAD_R = 24;
   const PLOT_W = SVG_W - PAD_L - PAD_R;
-  const MID_Y = 60;
-  const BOX_H = 32;
+  const MID_Y = 60; const BOX_H = 32;
 
-  const toX  = (v) => q ? PAD_L + ((v - q.scaleMin) / (q.scaleMax - q.scaleMin)) * PLOT_W : 0;
-  const toVal = (x) => q ? q.scaleMin + ((x - PAD_L) / PLOT_W) * (q.scaleMax - q.scaleMin) : 0;
-
+  const toX   = (v) => PAD_L + ((v - q.scaleMin) / (q.scaleMax - q.scaleMin)) * PLOT_W;
+  const toVal = (x) => q.scaleMin + ((x - PAD_L) / PLOT_W) * (q.scaleMax - q.scaleMin);
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
-  // pointer events on the SVG
   const onPointerDown = (e, key) => {
     e.preventDefault();
     svgRef.current.setPointerCapture(e.pointerId);
-    setDragging({ key, pointerId: e.pointerId });
+    setDragging({ key });
   };
-
   const onPointerMove = (e) => {
-    if (!dragging || !svgRef.current || !q) return;
+    if (!dragging || !svgRef.current) return;
     const rect = svgRef.current.getBoundingClientRect();
-    const svgX  = ((e.clientX - rect.left) / rect.width) * SVG_W;
-    let newVal  = Math.round(toVal(svgX));
-
-    // enforce ordering: min ≤ q1 ≤ median ≤ q3 ≤ max (with 1-unit gap)
+    const svgX = ((e.clientX - rect.left) / rect.width) * SVG_W;
+    let newVal = Math.round(toVal(svgX));
     setVals((prev) => {
       const next = { ...prev };
       if (dragging.key === "min")    newVal = clamp(newVal, q.scaleMin, prev.q1 - 1);
@@ -488,77 +704,41 @@ function BuildIt() {
       return next;
     });
   };
-
   const onPointerUp = () => setDragging(null);
-
-  // scoring
-  const score = q ? Object.keys(q.answer).map((k) => ({
-    key: k,
-    correct: Math.abs((vals[k] || 0) - q.answer[k]) <= TOLERANCE,
-    yours: vals[k] || 0,
-    answer: q.answer[k],
-  })) : [];
-
-  const allCorrect = score.every((s) => s.correct);
 
   const HANDLE_LABELS = { min: "Min", q1: "Q1", median: "Med", q3: "Q3", max: "Max" };
   const HANDLE_COLORS = { min: "#64748b", q1: "#00d4aa", median: "#ffffff", q3: "#00d4aa", max: "#64748b" };
-
   const tickCount = 6;
-  const ticks = q ? Array.from({ length: tickCount }, (_, i) =>
-    Math.round(q.scaleMin + (i / (tickCount - 1)) * (q.scaleMax - q.scaleMin))
-  ) : [];
+  const ticks = Array.from({ length: tickCount }, (_, i) =>
+    Math.round(q.scaleMin + (i / (tickCount - 1)) * (q.scaleMax - q.scaleMin)));
 
-  if (qIdx === null) {
-    return (
-      <div>
-        <p style={{ fontSize: "13px", color: C.muted, marginBottom: "16px", lineHeight: 1.6 }}>
-          Work out the 5 values from the data, then <strong style={{ color: C.text }}>drag the handles</strong> onto the number line to build the box plot. The box draws itself as you go.
-        </p>
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          {BUILD_QUESTIONS.map((bq, i) => (
-            <button
-              key={bq.id}
-              onClick={() => startQ(i)}
-              style={{ padding: "14px 16px", background: C.card, border: `1px solid ${C.border}`, borderRadius: "12px", cursor: "pointer", textAlign: "left", display: "flex", justifyContent: "space-between", alignItems: "center" }}
-            >
-              <span>
-                <span style={{ fontSize: "11px", fontWeight: "700", padding: "2px 8px", borderRadius: "99px", background: i === 0 ? "#ecfdf520" : i === 1 ? "#fffbeb20" : "#fef2f220", color: i === 0 ? C.accent : i === 1 ? C.amber : C.red, border: `1px solid ${i === 0 ? C.accent : i === 1 ? C.amber : C.red}40`, marginRight: "10px" }}>
-                  {bq.label}
-                </span>
-                <span style={{ fontSize: "13px", color: C.text }}>{bq.question}</span>
-              </span>
-              <span style={{ color: C.muted, fontSize: "18px", flexShrink: 0, marginLeft: "12px" }}>→</span>
-            </button>
-          ))}
-        </div>
-        <div style={{ background: C.surface, borderRadius: "10px", padding: "12px 14px", marginTop: "16px" }}>
-          <p style={{ fontSize: "12px", color: C.muted, margin: 0, lineHeight: 1.6 }}>
-            💡 <strong style={{ color: C.text }}>Tip:</strong> Work out all 5 values on paper first, then drag. Your answer is marked correct if it's within {TOLERANCE} units of the right value.
-          </p>
-        </div>
-      </div>
-    );
-  }
+  const score = Object.keys(q.answer).map((k) => ({
+    key: k, correct: Math.abs(vals[k] - q.answer[k]) <= TOLERANCE,
+    yours: vals[k], answer: q.answer[k],
+  }));
+  const allCorrect = score.every(s => s.correct);
 
   return (
     <div>
-      <button onClick={() => setQIdx(null)} style={{ background: "none", border: "none", cursor: "pointer", color: C.muted, fontSize: "13px", padding: "0 0 16px", display: "flex", alignItems: "center", gap: "4px" }}>
-        ← Back
-      </button>
-
-      {/* Question */}
-      <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: "12px", padding: "14px 16px", marginBottom: "16px" }}>
-        <p style={{ fontSize: "12px", fontWeight: "700", color: C.accent, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "8px" }}>
-          {q.label} — {q.question}
-        </p>
-        <div style={{ background: C.surface, borderRadius: "8px", padding: "10px 14px", fontSize: "13px", color: C.text, fontFamily: "monospace", letterSpacing: "0.04em", lineHeight: 1.8 }}>
-          {[...q.rawData].join("     ")}
-        </div>
-        <p style={{ fontSize: "12px", color: C.muted, margin: "8px 0 0", fontStyle: "italic" }}>
-          Work out Min, Q1, Median, Q3 and Max — then drag the handles below.
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+        <p style={{ fontSize: "12px", fontWeight: "700", color: C.accent, margin: 0, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+          Stage 3 of 3 — Place It
         </p>
       </div>
+
+      {/* Reference — the 5 correct values from stage 2 */}
+      <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginBottom: "16px" }}>
+        {Object.entries(q.answer).map(([k, v]) => (
+          <div key={k} style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: "8px", padding: "6px 10px", textAlign: "center" }}>
+            <p style={{ fontSize: "10px", color: C.muted, margin: "0 0 2px", textTransform: "uppercase" }}>{HANDLE_LABELS[k]}</p>
+            <p style={{ fontSize: "14px", fontWeight: "700", color: C.accent, margin: 0 }}>{v}</p>
+          </div>
+        ))}
+      </div>
+
+      <p style={{ fontSize: "13px", color: C.text, marginBottom: "16px" }}>
+        Now drag each handle to its correct position on the number line.
+      </p>
 
       {/* Interactive SVG */}
       <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: "12px", padding: "16px", marginBottom: "16px", touchAction: "none" }}>
@@ -567,40 +747,19 @@ function BuildIt() {
         </p>
         <svg
           ref={svgRef}
-          viewBox={`0 0 ${SVG_W} 120`}
+          viewBox={`0 0 ${SVG_W} 135`}
           style={{ width: "100%", overflow: "visible", cursor: dragging ? "grabbing" : "default", userSelect: "none" }}
-          onPointerMove={onPointerMove}
-          onPointerUp={onPointerUp}
-          onPointerLeave={onPointerUp}
+          onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerLeave={onPointerUp}
         >
-          {/* Grid lines */}
           {ticks.map((t) => (
             <line key={t} x1={toX(t)} y1={10} x2={toX(t)} y2={MID_Y + BOX_H / 2 + 4} stroke={C.border} strokeWidth="1" strokeDasharray="3,3" />
           ))}
-
-          {/* Whisker left */}
-          <line x1={toX(vals.min || 0)} y1={MID_Y} x2={toX(vals.q1 || 0)} y2={MID_Y} stroke={C.accent} strokeWidth="2" />
-          <line x1={toX(vals.min || 0)} y1={MID_Y - 10} x2={toX(vals.min || 0)} y2={MID_Y + 10} stroke={C.accent} strokeWidth="2.5" />
-
-          {/* Whisker right */}
-          <line x1={toX(vals.q3 || 0)} y1={MID_Y} x2={toX(vals.max || 0)} y2={MID_Y} stroke={C.accent} strokeWidth="2" />
-          <line x1={toX(vals.max || 0)} y1={MID_Y - 10} x2={toX(vals.max || 0)} y2={MID_Y + 10} stroke={C.accent} strokeWidth="2.5" />
-
-          {/* Box */}
-          {vals.q1 && vals.q3 && (
-            <rect
-              x={toX(vals.q1)} y={MID_Y - BOX_H / 2}
-              width={Math.max(0, toX(vals.q3) - toX(vals.q1))} height={BOX_H}
-              fill={C.accent + "20"} stroke={C.accent} strokeWidth="2" rx="3"
-            />
-          )}
-
-          {/* Median line */}
-          {vals.median && (
-            <line x1={toX(vals.median)} y1={MID_Y - BOX_H / 2} x2={toX(vals.median)} y2={MID_Y + BOX_H / 2} stroke={C.white} strokeWidth="3" />
-          )}
-
-          {/* Axis */}
+          <line x1={toX(vals.min)} y1={MID_Y} x2={toX(vals.q1)} y2={MID_Y} stroke={C.accent} strokeWidth="2" />
+          <line x1={toX(vals.min)} y1={MID_Y - 10} x2={toX(vals.min)} y2={MID_Y + 10} stroke={C.accent} strokeWidth="2.5" />
+          <line x1={toX(vals.q3)} y1={MID_Y} x2={toX(vals.max)} y2={MID_Y} stroke={C.accent} strokeWidth="2" />
+          <line x1={toX(vals.max)} y1={MID_Y - 10} x2={toX(vals.max)} y2={MID_Y + 10} stroke={C.accent} strokeWidth="2.5" />
+          <rect x={toX(vals.q1)} y={MID_Y - BOX_H / 2} width={Math.max(0, toX(vals.q3) - toX(vals.q1))} height={BOX_H} fill={C.accent + "20"} stroke={C.accent} strokeWidth="2" rx="3" />
+          <line x1={toX(vals.median)} y1={MID_Y - BOX_H / 2} x2={toX(vals.median)} y2={MID_Y + BOX_H / 2} stroke={C.white} strokeWidth="3" />
           <line x1={PAD_L} y1={MID_Y + BOX_H / 2 + 6} x2={SVG_W - PAD_R} y2={MID_Y + BOX_H / 2 + 6} stroke={C.border} strokeWidth="1.5" />
           {ticks.map((t) => (
             <g key={t}>
@@ -608,31 +767,17 @@ function BuildIt() {
               <text x={toX(t)} y={MID_Y + BOX_H / 2 + 24} fill={C.muted} fontSize="10" textAnchor="middle">{t}</text>
             </g>
           ))}
-          <text x={SVG_W / 2} y={118} fill={C.muted} fontSize="10" textAnchor="middle">{q.unit}</text>
-
-          {/* Drag handles */}
+          <text x={SVG_W / 2} y={133} fill={C.muted} fontSize="10" textAnchor="middle">{q.unit}</text>
           {Object.entries(HANDLE_LABELS).map(([key, label]) => {
-            const x = toX(vals[key] || 0);
+            const x = toX(vals[key]);
             const isActive = dragging?.key === key;
             return (
               <g key={key} style={{ cursor: "grab" }} onPointerDown={(e) => onPointerDown(e, key)}>
-                {/* Hit area */}
                 <rect x={x - 14} y={MID_Y - BOX_H / 2 - 22} width={28} height={BOX_H + 44} fill="transparent" />
-                {/* Label bubble */}
-                <rect x={x - 14} y={MID_Y - BOX_H / 2 - 22} width={28} height={18}
-                  fill={isActive ? C.accent : C.surface} stroke={HANDLE_COLORS[key]} strokeWidth="1.5" rx="4" />
-                <text x={x} y={MID_Y - BOX_H / 2 - 8} fill={isActive ? C.bg : HANDLE_COLORS[key]}
-                  fontSize="9" fontWeight="700" textAnchor="middle">{label}</text>
-                {/* Value */}
-                <text x={x} y={MID_Y + BOX_H / 2 + 38} fill={isActive ? C.accent : C.muted}
-                  fontSize="10" fontWeight={isActive ? "700" : "400"} textAnchor="middle">
-                  {vals[key] || 0}
-                </text>
-                {/* Diamond handle */}
-                <polygon
-                  points={`${x},${MID_Y - BOX_H / 2 - 4} ${x + 6},${MID_Y} ${x},${MID_Y + BOX_H / 2 + 4} ${x - 6},${MID_Y}`}
-                  fill={isActive ? C.accent : C.card} stroke={HANDLE_COLORS[key]} strokeWidth="1.5"
-                />
+                <rect x={x - 14} y={MID_Y - BOX_H / 2 - 22} width={28} height={18} fill={isActive ? C.accent : C.surface} stroke={HANDLE_COLORS[key]} strokeWidth="1.5" rx="4" />
+                <text x={x} y={MID_Y - BOX_H / 2 - 8} fill={isActive ? C.bg : HANDLE_COLORS[key]} fontSize="9" fontWeight="700" textAnchor="middle">{label}</text>
+                <text x={x} y={MID_Y + BOX_H / 2 + 38} fill={isActive ? C.accent : C.muted} fontSize="10" fontWeight={isActive ? "700" : "400"} textAnchor="middle">{vals[key]}</text>
+                <polygon points={`${x},${MID_Y - BOX_H / 2 - 4} ${x + 6},${MID_Y} ${x},${MID_Y + BOX_H / 2 + 4} ${x - 6},${MID_Y}`} fill={isActive ? C.accent : C.card} stroke={HANDLE_COLORS[key]} strokeWidth="1.5" />
               </g>
             );
           })}
@@ -640,10 +785,7 @@ function BuildIt() {
       </div>
 
       {/* Hint */}
-      <button
-        onClick={() => setShowHint(!showHint)}
-        style={{ background: "none", border: `1px solid ${C.border}`, borderRadius: "8px", padding: "8px 14px", color: C.muted, fontSize: "12px", cursor: "pointer", marginBottom: "8px", width: "100%" }}
-      >
+      <button onClick={() => setShowHint(!showHint)} style={{ background: "none", border: `1px solid ${C.border}`, borderRadius: "8px", padding: "8px 14px", color: C.muted, fontSize: "12px", cursor: "pointer", marginBottom: "8px", width: "100%" }}>
         {showHint ? "Hide hint" : "💡 Show hint"}
       </button>
       {showHint && (
@@ -652,55 +794,201 @@ function BuildIt() {
         </div>
       )}
 
-      {/* Check / Reset */}
       <div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
-        <button
-          onClick={() => setChecked(true)}
-          style={{ flex: 2, padding: "13px", background: C.accent, color: C.bg, border: "none", borderRadius: "10px", fontSize: "14px", fontWeight: "700", cursor: "pointer" }}
-        >
+        <button onClick={() => setChecked(true)} style={{ flex: 2, padding: "13px", background: C.accent, color: C.bg, border: "none", borderRadius: "10px", fontSize: "14px", fontWeight: "700", cursor: "pointer" }}>
           Check my answer
         </button>
-        <button
-          onClick={reset}
-          style={{ flex: 1, padding: "13px", background: C.surface, color: C.muted, border: `1px solid ${C.border}`, borderRadius: "10px", fontSize: "14px", cursor: "pointer" }}
-        >
+        <button onClick={reset} style={{ flex: 1, padding: "13px", background: C.surface, color: C.muted, border: `1px solid ${C.border}`, borderRadius: "10px", fontSize: "14px", cursor: "pointer" }}>
           Reset
         </button>
       </div>
 
-      {/* Results */}
       {checked && (
         <div style={{ background: allCorrect ? "#052e1c" : C.card, border: `1px solid ${allCorrect ? "#16a34a60" : C.border}`, borderRadius: "12px", padding: "14px 16px", marginBottom: "12px" }}>
           <p style={{ fontSize: "14px", fontWeight: "700", color: allCorrect ? "#4ade80" : C.amber, marginBottom: "12px" }}>
-            {allCorrect ? "🎉 All correct! Great work." : "Here's how you did:"}
+            {allCorrect ? "🎉 All three stages complete! Great work." : "Here's how you did:"}
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
             {score.map(({ key, correct, yours, answer }) => (
               <div key={key} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 10px", background: correct ? "#16a34a15" : "#ef444415", borderRadius: "8px" }}>
                 <span style={{ fontSize: "13px", color: C.text, fontWeight: "600" }}>{HANDLE_LABELS[key]}</span>
-                <span style={{ fontSize: "13px", color: C.muted }}>Your answer: <strong style={{ color: correct ? "#4ade80" : C.red }}>{yours}</strong></span>
+                <span style={{ fontSize: "13px", color: C.muted }}>Yours: <strong style={{ color: correct ? "#4ade80" : C.red }}>{yours}</strong></span>
                 {!correct && <span style={{ fontSize: "13px", color: C.muted }}>Correct: <strong style={{ color: C.accent }}>{answer}</strong></span>}
                 <span style={{ fontSize: "16px" }}>{correct ? "✓" : "✗"}</span>
               </div>
             ))}
           </div>
           {!allCorrect && (
-            <button
-              onClick={() => setShowAnswer(!showAnswer)}
-              style={{ marginTop: "12px", width: "100%", padding: "10px", background: "transparent", border: `1px solid ${C.accent}`, borderRadius: "8px", color: C.accent, fontSize: "13px", fontWeight: "600", cursor: "pointer" }}
-            >
+            <button onClick={() => setShowAnswer(!showAnswer)} style={{ marginTop: "12px", width: "100%", padding: "10px", background: "transparent", border: `1px solid ${C.accent}`, borderRadius: "8px", color: C.accent, fontSize: "13px", fontWeight: "600", cursor: "pointer" }}>
               {showAnswer ? "Hide correct box plot" : "Show correct box plot"}
             </button>
           )}
           {showAnswer && !allCorrect && (
             <div style={{ marginTop: "12px", background: C.surface, borderRadius: "10px", padding: "14px" }}>
-              <BoxPlotSVG
-                sets={[{ ...q.answer, label: "Correct answer", color: C.accent }]}
-                scaleMin={q.scaleMin} scaleMax={q.scaleMax} unit={q.unit}
-                showLabels={false}
-              />
+              <BoxPlotSVG sets={[{ ...q.answer, label: "Correct answer", color: C.accent }]} scaleMin={q.scaleMin} scaleMax={q.scaleMax} unit={q.unit} showLabels={false} />
             </div>
           )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── BuildIt — orchestrates the 3 stages ──────────────────────────────────
+function BuildIt() {
+  const [qIdx, setQIdx]   = useState(null);
+  const [stage, setStage] = useState(1); // 1 | 2 | 3
+
+  const q = qIdx !== null ? BUILD_QUESTIONS[qIdx] : null;
+
+  const startQ = (idx) => { setQIdx(idx); setStage(1); };
+
+  // Question picker
+  if (qIdx === null) {
+    return (
+      <div>
+        <p style={{ fontSize: "13px", color: C.muted, marginBottom: "16px", lineHeight: 1.6 }}>
+          Each question has <strong style={{ color: C.text }}>3 stages</strong>: order the data → find the 5 values → drag to build the box plot.
+        </p>
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          {BUILD_QUESTIONS.map((bq, i) => (
+            <button key={bq.id} onClick={() => startQ(i)} style={{ padding: "14px 16px", background: C.card, border: `1px solid ${C.border}`, borderRadius: "12px", cursor: "pointer", textAlign: "left", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span>
+                <span style={{ fontSize: "11px", fontWeight: "700", padding: "2px 8px", borderRadius: "99px", background: i === 0 ? "#ecfdf520" : i === 1 ? "#fffbeb20" : "#fef2f220", color: i === 0 ? C.accent : i === 1 ? C.amber : C.red, border: `1px solid ${i === 0 ? C.accent : i === 1 ? C.amber : C.red}40`, marginRight: "10px" }}>{bq.label}</span>
+                <span style={{ fontSize: "13px", color: C.text }}>{bq.question}</span>
+              </span>
+              <span style={{ color: C.muted, fontSize: "18px", flexShrink: 0, marginLeft: "12px" }}>→</span>
+            </button>
+          ))}
+        </div>
+        <div style={{ background: C.surface, borderRadius: "10px", padding: "12px 14px", marginTop: "16px" }}>
+          <p style={{ fontSize: "12px", color: C.muted, margin: 0, lineHeight: 1.6 }}>
+            💡 <strong style={{ color: C.text }}>Remember:</strong> always order the data first — it's the step most students skip and it's where errors start.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Stage progress bar
+  const StageBar = () => (
+    <div style={{ display: "flex", gap: "6px", marginBottom: "20px" }}>
+      {[
+        { n: 1, label: "Order It" },
+        { n: 2, label: "Find Values" },
+        { n: 3, label: "Place It" },
+      ].map(({ n, label }) => (
+        <div key={n} style={{ flex: 1, padding: "8px 6px", borderRadius: "8px", background: stage >= n ? (stage === n ? C.accent : C.accentDim) : C.surface, border: `1px solid ${stage >= n ? C.accent : C.border}`, textAlign: "center" }}>
+          <p style={{ fontSize: "11px", fontWeight: "700", color: stage >= n ? (stage === n ? C.bg : C.accent) : C.muted, margin: 0 }}>{n}. {label}</p>
+        </div>
+      ))}
+    </div>
+  );
+
+  return (
+    <div>
+      <button onClick={() => setQIdx(null)} style={{ background: "none", border: "none", cursor: "pointer", color: C.muted, fontSize: "13px", padding: "0 0 16px", display: "flex", alignItems: "center", gap: "4px" }}>
+        ← Back to questions
+      </button>
+      <StageBar />
+      {stage === 1 && <StageOrder q={q} onComplete={() => setStage(2)} />}
+      {stage === 2 && <StageFive  q={q} onComplete={() => setStage(3)} />}
+      {stage === 3 && <StageDrag  q={q} onBack={() => setQIdx(null)} />}
+    </div>
+  );
+}
+
+// ── Generate a realistic ordered list of 20 values that hits the 5 key points ──
+function generateSampleData(s) {
+  // 20 values: positions 1,5,10,15,20 are min,q1,median,q3,max
+  // Fill the gaps with evenly spaced values + small jitter
+  const lerp = (a, b, t) => Math.round(a + (b - a) * t);
+  const vals = [];
+  // segment 1: positions 1–5  (min → q1)
+  for (let i = 0; i < 5; i++) vals.push(lerp(s.min, s.q1, i / 4));
+  // segment 2: positions 6–10 (q1 → median)
+  for (let i = 1; i <= 5; i++) vals.push(lerp(s.q1, s.median, i / 5));
+  // segment 3: positions 11–15 (median → q3)
+  for (let i = 1; i <= 5; i++) vals.push(lerp(s.median, s.q3, i / 5));
+  // segment 4: positions 16–20 (q3 → max)
+  for (let i = 1; i <= 5; i++) vals.push(lerp(s.q3, s.max, i / 5));
+  return vals; // already ordered, 20 values
+}
+
+// ── Ordered data table with highlighted positions ─────────────────────────
+function OrderedDataTable({ s, unit }) {
+  const [expanded, setExpanded] = useState(false);
+  const data = generateSampleData(s);
+
+  // which positions are special (0-indexed)
+  const special = {
+    0:  { role: "Minimum",        color: C.muted,  bg: "#1e2d4080" },
+    4:  { role: "Q1 (lower quartile — 25% below this)", color: s.color, bg: s.color + "15" },
+    9:  { role: "Median (middle — 50% below this)",      color: "#ffffff", bg: "#ffffff15" },
+    14: { role: "Q3 (upper quartile — 75% below this)", color: s.color, bg: s.color + "15" },
+    19: { role: "Maximum",        color: C.muted,  bg: "#1e2d4080" },
+  };
+
+  const rowsToShow = expanded ? data : data.slice(0, 20);
+
+  return (
+    <div style={{ marginBottom: "8px" }}>
+      <button
+        onClick={() => setExpanded(!expanded)}
+        style={{ width: "100%", background: C.surface, border: `1px solid ${C.border}`, borderRadius: "10px", padding: "10px 14px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: expanded ? "8px" : "0" }}
+      >
+        <span style={{ fontSize: "12px", fontWeight: "700", color: s.color }}>
+          📋 {s.label} — see all 20 results in order
+        </span>
+        <span style={{ fontSize: "12px", color: C.muted }}>{expanded ? "▲ Hide" : "▼ Show"}</span>
+      </button>
+
+      {expanded && (
+        <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: "10px", overflow: "hidden" }}>
+          {/* Header */}
+          <div style={{ display: "grid", gridTemplateColumns: "40px 60px 1fr 1fr", padding: "8px 12px", borderBottom: `1px solid ${C.border}`, background: C.card }}>
+            <span style={{ fontSize: "11px", color: C.muted, fontWeight: "600" }}>#</span>
+            <span style={{ fontSize: "11px", color: C.muted, fontWeight: "600" }}>{unit.split(" ")[0]}</span>
+            <span style={{ fontSize: "11px", color: C.muted, fontWeight: "600" }}>Position in list</span>
+            <span style={{ fontSize: "11px", color: C.muted, fontWeight: "600" }}>What this means</span>
+          </div>
+
+          {/* Rows */}
+          {rowsToShow.map((val, i) => {
+            const sp = special[i];
+            const isSpecial = !!sp;
+            return (
+              <div
+                key={i}
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "40px 60px 1fr 1fr",
+                  padding: "7px 12px",
+                  background: isSpecial ? sp.bg : "transparent",
+                  borderBottom: `1px solid ${C.border}20`,
+                  alignItems: "center",
+                }}
+              >
+                <span style={{ fontSize: "12px", color: C.muted }}>{i + 1}</span>
+                <span style={{ fontSize: "13px", fontWeight: isSpecial ? "700" : "400", color: isSpecial ? sp.color : C.text }}>
+                  {val}
+                </span>
+                <span style={{ fontSize: "11px", color: C.muted }}>
+                  {i + 1} of 20
+                </span>
+                <span style={{ fontSize: "11px", color: isSpecial ? sp.color : C.muted, fontWeight: isSpecial ? "600" : "400" }}>
+                  {isSpecial ? sp.role : "—"}
+                </span>
+              </div>
+            );
+          })}
+
+          {/* Footer explanation */}
+          <div style={{ padding: "10px 12px", background: C.card, borderTop: `1px solid ${C.border}` }}>
+            <p style={{ fontSize: "12px", color: C.muted, margin: 0, lineHeight: 1.6 }}>
+              <strong style={{ color: C.text }}>Why these positions?</strong> With 20 values, the median sits between positions 10 and 11 — we average them. Q1 is the median of the bottom 10 (position 5). Q3 is the median of the top 10 (position 15).
+            </p>
+          </div>
         </div>
       )}
     </div>
@@ -793,24 +1081,55 @@ export default function BoxPlotVisualiser() {
               />
             </div>
 
+            {/* Ordered data tables — one per set, collapsed by default */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "16px" }}>
+              {scenario.sets.map((s) => (
+                <OrderedDataTable key={s.label} s={s} unit={scenario.unit} />
+              ))}
+            </div>
+
+            {/* Plain English summary — one card per data set */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "16px" }}>
+              {scenario.sets.map((s) => {
+                const iqr = s.q3 - s.q1;
+                const unit = scenario.unit;
+                return (
+                  <div key={s.label} style={{ background: C.surface, borderLeft: `3px solid ${s.color}`, borderRadius: "10px", padding: "12px 14px" }}>
+                    <p style={{ fontSize: "12px", fontWeight: "700", color: s.color, marginBottom: "6px" }}>
+                      {s.label} — what the numbers mean
+                    </p>
+                    <p style={{ fontSize: "13px", color: C.text, lineHeight: 1.8, margin: 0 }}>
+                      🔹 The <strong>shortest</strong> recorded was <strong style={{ color: C.text }}>{s.min} {unit}</strong> — that's the best case.<br />
+                      🔹 A <strong>typical</strong> result was around <strong style={{ color: s.color }}>{s.median} {unit}</strong> — half were below this, half above.<br />
+                      🔹 The <strong>middle half</strong> of all results fell between <strong style={{ color: s.color }}>{s.q1}</strong> and <strong style={{ color: s.color }}>{s.q3} {unit}</strong> — that's a spread of <strong style={{ color: s.color }}>{iqr} {unit}</strong>. This is the IQR.<br />
+                      🔹 The <strong>longest</strong> recorded was <strong style={{ color: C.text }}>{s.max} {unit}</strong> — the worst case.
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+
             {/* The 5-number breakdown */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "16px" }}>
               {scenario.sets.map((s) => (
                 <div key={s.label} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: "12px", padding: "14px" }}>
                   <p style={{ fontSize: "12px", fontWeight: "700", color: s.color, marginBottom: "10px" }}>{s.label}</p>
                   {[
-                    { label: "Min",    val: s.min },
-                    { label: "Q1",     val: s.q1 },
-                    { label: "Median", val: s.median },
-                    { label: "Q3",     val: s.q3 },
-                    { label: "Max",    val: s.max },
-                    { label: "IQR",    val: s.q3 - s.q1 },
-                  ].map(({ label, val }) => (
-                    <div key={label} style={{ display: "flex", justifyContent: "space-between", paddingBottom: "4px", marginBottom: "4px", borderBottom: `1px solid ${C.border}20` }}>
-                      <span style={{ fontSize: "12px", color: C.muted }}>{label}</span>
-                      <span style={{ fontSize: "12px", fontWeight: "700", color: label === "Median" || label === "IQR" ? s.color : C.text }}>
-                        {val}
-                      </span>
+                    { label: "Min",    val: s.min,        plain: "Lowest value" },
+                    { label: "Q1",     val: s.q1,         plain: "25% below this" },
+                    { label: "Median", val: s.median,     plain: "Typical (middle)" },
+                    { label: "Q3",     val: s.q3,         plain: "75% below this" },
+                    { label: "Max",    val: s.max,        plain: "Highest value" },
+                    { label: "IQR",    val: s.q3 - s.q1, plain: "Spread of middle 50%" },
+                  ].map(({ label, val, plain }) => (
+                    <div key={label} style={{ paddingBottom: "6px", marginBottom: "6px", borderBottom: `1px solid ${C.border}20` }}>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}>
+                        <span style={{ fontSize: "12px", color: C.muted }}>{label}</span>
+                        <span style={{ fontSize: "12px", fontWeight: "700", color: label === "Median" || label === "IQR" ? s.color : C.text }}>
+                          {val}
+                        </span>
+                      </div>
+                      <p style={{ fontSize: "11px", color: C.muted, margin: "1px 0 0", fontStyle: "italic" }}>{plain}</p>
                     </div>
                   ))}
                 </div>
