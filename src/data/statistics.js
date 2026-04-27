@@ -6,9 +6,9 @@ const statistics = [
     strand: "Statistics",
     tier: "both", // Foundation and Higher
     realWorldHook:
-      "Hospitals use box plots to compare patient waiting times across different wards. A business uses them to compare salaries across departments. Scientists use them to compare results from two experiments. They're everywhere — once you know what you're looking at.",
+      "Hospitals use box plots to compare patient waiting times across different wards — not just the average wait, but whether the times are consistent or all over the place. A business uses them to compare salaries and spot whether pay is fair across a team. Scientists use them to compare results from two experiments. They answer two questions at once: what is typical, and how spread out is everything? Once you can read one, you'll spot them everywhere.",
     whyItMatters:
-      "Box plots let you see the full spread of a data set at a glance — not just the average, but how consistent or spread out the data is. Two classes could have the same average test score, but one class has everyone clustered near the middle while the other has some very high and very low scores. A box plot shows that instantly.",
+      "Most averages only tell you one thing — the middle. But two classes could have the same average test score while being completely different. In one class everyone scored close to the average. In the other, half the class scored very high and half very low. A box plot shows that difference instantly, by displaying the full spread of results — not just the middle. The key measure of spread is called the Interquartile Range (IQR) — we'll explain exactly what that means in the key points below.",
     points: [
       "A box plot (also called a box-and-whisker diagram) shows how a set of data is spread out using just 5 numbers.",
       "The 5 key values are: Minimum, Lower Quartile (Q1), Median (Q2), Upper Quartile (Q3), Maximum.",
@@ -69,8 +69,7 @@ const statistics = [
         {
           step: 7,
           instruction: "Summary of the 5 values to plot:",
-          working:
-            "Minimum = 18\nQ1 = 23\nMedian = 30\nQ3 = 38\nMaximum = 45",
+          working: "Minimum = 18\nQ1 = 23\nMedian = 30\nQ3 = 38\nMaximum = 45",
           tip: "Draw a number line, mark all 5 points, draw a box from Q1 to Q3, a line at the median, and whiskers out to min and max.",
         },
       ],
@@ -254,7 +253,8 @@ const statistics = [
         },
         {
           step: 3,
-          instruction: "Plot the histogram with frequency density on the y-axis.",
+          instruction:
+            "Plot the histogram with frequency density on the y-axis.",
           working:
             "Draw bars with NO GAPS.\nBar heights: 0.6, 1.5, 1.2, 0.5\nBar widths match class widths: 10, 10, 20, 30",
           tip: "The tallest bar is NOT necessarily the most common group — always check by calculating Area = FD × Width.",
