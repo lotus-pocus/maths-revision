@@ -1,6 +1,6 @@
 import statistics from "./data/statistics";
 import MathsTopicsView from "./components/MathsTopicsView";
-import BoxPlotVisualiser from "./components/BoxPlotVisualiser";
+import BoxPlotVisualiser from "./components/maths/statistics/boxplots";
 import "./App.css";
 
 function App() {
