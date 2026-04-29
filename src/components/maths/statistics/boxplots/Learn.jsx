@@ -1,6 +1,12 @@
 import React, { useState } from "react";
 import { C } from "./data";
 import GlossaryTerm from "./GlossaryTerm";
+import ScoreTable from "./learn/ScoreTable";
+import Reveal from "./learn/Reveal";
+import StepBubble from "./learn/StepBubble";
+import MedianDemo from "./learn/MedianDemo";
+import IQRComparison from "./learn/IQRComparison";
+import BarChart from "./shared/BarChart";
 
 // ── Data ──────────────────────────────────────────────────────────────────
 // 60 scores: 30 per class, consistent with box plot values
@@ -196,58 +202,6 @@ function MiniBoxPlot({ sets, scaleMin, scaleMax, unit, highlightPart }) {
   );
 }
 
-// ── IQR comparison - same median, different IQR ───────────────────────────
-function IQRComparison() {
-  const W = 520; const padL = 20; const padR = 20; const plotW = W - padL - padR;
-  const toX = (v) => padL + (v / 100) * plotW;
-  const rowH = 92; const boxH = 28;
-  const examples = [
-    { label: "Class A - IQR = 8",  q1: 46, median: 51, q3: 54, min: 38, max: 63, color: C.accent },
-    { label: "Class B - IQR = 32", q1: 30, median: 51, q3: 62, min: 15, max: 80, color: "#d97706" },
-  ];
-  const svgH = examples.length * rowH + 44;
-  return (
-    <svg viewBox={`0 0 ${W} ${svgH}`} style={{ width: "100%", overflow: "visible" }}>
-      {[0,20,40,60,80,100].map(t => (
-        <line key={t} x1={toX(t)} y1={0} x2={toX(t)} y2={examples.length*rowH} stroke={C.border} strokeWidth="1" strokeDasharray="3,4" />
-      ))}
-      {examples.map((s, si) => {
-        const cy = si*rowH+rowH/2;
-        const xMin=toX(s.min); const xQ1=toX(s.q1); const xM=toX(s.median); const xQ3=toX(s.q3); const xMax=toX(s.max);
-        const bTop=cy-boxH/2; const bBot=cy+boxH/2;
-        return (
-          <g key={s.label}>
-            <text x={padL} y={bTop-7} fill={s.color} fontSize="11" fontWeight="700">{s.label}</text>
-            <line x1={xMin} y1={cy} x2={xQ1} y2={cy} stroke={s.color} strokeWidth="2" />
-            <line x1={xMin} y1={bTop+7} x2={xMin} y2={bBot-7} stroke={s.color} strokeWidth="2" />
-            <line x1={xQ3} y1={cy} x2={xMax} y2={cy} stroke={s.color} strokeWidth="2" />
-            <line x1={xMax} y1={bTop+7} x2={xMax} y2={bBot-7} stroke={s.color} strokeWidth="2" />
-            <line x1={xQ1} y1={bTop-14} x2={xQ3} y2={bTop-14} stroke={s.color} strokeWidth="1.5" />
-            <line x1={xQ1} y1={bTop-18} x2={xQ1} y2={bTop-10} stroke={s.color} strokeWidth="1.5" />
-            <line x1={xQ3} y1={bTop-18} x2={xQ3} y2={bTop-10} stroke={s.color} strokeWidth="1.5" />
-            <text x={(xQ1+xQ3)/2} y={bTop-20} textAnchor="middle" fill={s.color} fontSize="10" fontWeight="700">IQR = {s.q3-s.q1}</text>
-            <rect x={xQ1} y={bTop} width={xQ3-xQ1} height={boxH} fill={s.color+"25"} stroke={s.color} strokeWidth="2" rx="3" />
-            <line x1={xM} y1={bTop} x2={xM} y2={bBot} stroke={C.text} strokeWidth="3" />
-            <text x={xMin} y={bBot+13} textAnchor="middle" fill={C.muted} fontSize="9">{s.min}</text>
-            <text x={xQ1}  y={bBot+13} textAnchor="middle" fill={C.muted} fontSize="9">{s.q1}</text>
-            <text x={xM}   y={bBot+13} textAnchor="middle" fill={C.text}  fontSize="9" fontWeight="700">{s.median}</text>
-            <text x={xQ3}  y={bBot+13} textAnchor="middle" fill={C.muted} fontSize="9">{s.q3}</text>
-            <text x={xMax} y={bBot+13} textAnchor="middle" fill={C.muted} fontSize="9">{s.max}</text>
-          </g>
-        );
-      })}
-      <line x1={padL} y1={examples.length*rowH+2} x2={W-padR} y2={examples.length*rowH+2} stroke={C.border} strokeWidth="1.5" />
-      {[0,20,40,60,80,100].map(t => (
-        <g key={t}>
-          <line x1={toX(t)} y1={examples.length*rowH+2} x2={toX(t)} y2={examples.length*rowH+8} stroke={C.muted} strokeWidth="1.5" />
-          <text x={toX(t)} y={examples.length*rowH+22} fill={C.muted} fontSize="10" textAnchor="middle">{t}</text>
-        </g>
-      ))}
-      <text x={W/2} y={svgH-2} fill={C.muted} fontSize="10" textAnchor="middle">Score (out of 100)</text>
-    </svg>
-  );
-}
-
 // ── Cumulative frequency graph ────────────────────────────────────────────
 function CumFreqGraph() {
   const W = 520; const padL = 44; const padR = 16; const padT = 16; const padB = 48;
@@ -329,242 +283,6 @@ function CumFreqGraph() {
   );
 }
 
-// ── Bar chart ─────────────────────────────────────────────────────────────
-function BarChart() {
-  const W = 520; const padL = 36; const padR = 16; const padT = 16; const padB = 44;
-  const plotW = W - padL - padR; const plotH = 180;
-  const maxCount = Math.max(...BAR_BANDS.map(b => b.count));
-  const barW = plotW / BAR_BANDS.length;
-  const toY = (count) => padT + plotH - (count / maxCount) * plotH;
-  const yTicks = [0, 3, 6, 9, 12];
-
-  // highlight bars that contain Q1 (38.5), median (51), Q3 (61.5)
-  const isKeyBand = (label) => {
-    if (label === "30-39") return "q1";
-    if (label === "50-59") return "median";
-    if (label === "60-69") return "q3";
-    return null;
-  };
-
-  return (
-    <svg viewBox={`0 0 ${W} ${padT + plotH + padB}`} style={{ width: "100%", overflow: "visible" }}>
-      {/* Grid */}
-      {yTicks.map(f => (
-        <line key={f} x1={padL} y1={toY(f)} x2={W-padR} y2={toY(f)} stroke={C.border} strokeWidth="1" strokeDasharray="3,4" />
-      ))}
-
-      {/* Bars */}
-      {BAR_BANDS.map((band, i) => {
-        const x = padL + i * barW;
-        const y = toY(band.count);
-        const h = padT + plotH - y;
-        const key = isKeyBand(band.label);
-        const barColor = key === "median" ? C.text : key ? C.accent : C.accent + "60";
-        return (
-          <g key={band.label}>
-            <rect x={x+2} y={y} width={barW-4} height={h}
-              fill={barColor} rx="3" opacity={key ? 1 : 0.5} />
-            {band.count > 0 && (
-              <text x={x+barW/2} y={y-4} textAnchor="middle" fill={key ? C.accent : C.muted} fontSize="9" fontWeight={key ? "700" : "400"}>{band.count}</text>
-            )}
-            <text x={x+barW/2} y={padT+plotH+14} textAnchor="middle" fill={key ? C.accent : C.muted}
-              fontSize="8" fontWeight={key ? "700" : "400"}>{band.label}</text>
-          </g>
-        );
-      })}
-
-      {/* Axes */}
-      <line x1={padL} y1={padT} x2={padL} y2={padT+plotH} stroke={C.text} strokeWidth="1.5" />
-      <line x1={padL} y1={padT+plotH} x2={W-padR} y2={padT+plotH} stroke={C.text} strokeWidth="1.5" />
-
-      {/* Y ticks */}
-      {yTicks.map(f => (
-        <g key={f}>
-          <line x1={padL-4} y1={toY(f)} x2={padL} y2={toY(f)} stroke={C.muted} strokeWidth="1" />
-          <text x={padL-6} y={toY(f)+4} textAnchor="end" fill={C.muted} fontSize="9">{f}</text>
-        </g>
-      ))}
-
-      {/* Axis labels */}
-      <text x={padL-28} y={padT+plotH/2} textAnchor="middle" fill={C.muted} fontSize="10"
-        transform={`rotate(-90, ${padL-28}, ${padT+plotH/2})`}>Number of students</text>
-      <text x={padL+plotW/2} y={padT+plotH+padB-4} textAnchor="middle" fill={C.muted} fontSize="10">Score range (out of 100)</text>
-
-      {/* Legend note */}
-      <text x={padL+plotW/2} y={padT+plotH+padB-18} textAnchor="middle" fill={C.accent} fontSize="9" fontWeight="600">
-        Darker bars = where Q1, Median and Q3 fall
-      </text>
-    </svg>
-  );
-}
-
-// ── Score table ───────────────────────────────────────────────────────────
-function ScoreTable() {
-  const [expanded, setExpanded] = useState(false);
-  const rows = [];
-  for (let i = 0; i < ALL_SCORES.length; i += 10) {
-    rows.push(ALL_SCORES.slice(i, i + 10));
-  }
-
-  // Which positions are special (1-indexed)
-  const specialPos = {
-    1:  { label: "Min",    color: C.muted },
-    15: { label: "Q1",     color: C.accent },
-    16: { label: "Q1",     color: C.accent },
-    30: { label: "Median", color: C.text },
-    31: { label: "Median", color: C.text },
-    45: { label: "Q3",     color: C.accent },
-    46: { label: "Q3",     color: C.accent },
-    60: { label: "Max",    color: C.muted },
-  };
-
-  return (
-    <div style={{ marginBottom: "20px" }}>
-      <button onClick={() => setExpanded(!expanded)}
-        style={{ width: "100%", background: expanded ? C.accentDim : C.surface,
-          border: `1px solid ${expanded ? C.accent : C.border}`, borderRadius: "12px",
-          padding: "12px 16px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div style={{ textAlign: "left" }}>
-          <p style={{ fontSize: "13px", fontWeight: "700", color: expanded ? C.accent : C.text, margin: 0 }}>
-            📋 All 60 scores - sorted lowest to highest
-          </p>
-          <p style={{ fontSize: "11px", color: C.muted, margin: "2px 0 0" }}>
-            This is what the teacher collated. Tap to see the full table.
-          </p>
-        </div>
-        <span style={{ fontSize: "12px", color: C.muted, flexShrink: 0, marginLeft: "10px" }}>{expanded ? "▲ Hide" : "▼ Show"}</span>
-      </button>
-
-      {expanded && (
-        <div style={{ marginTop: "8px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: "12px", overflow: "hidden" }}>
-          {/* Header */}
-          <div style={{ background: C.accentDim, padding: "8px 12px", borderBottom: `1px solid ${C.border}` }}>
-            <p style={{ fontSize: "11px", color: C.accent, margin: 0, fontWeight: "600" }}>
-              Highlighted positions: <strong>Q1 = average of positions 15 and 16 (38.5)</strong> · <strong>Median = average of positions 30 and 31 (51)</strong> · <strong>Q3 = average of positions 45 and 46 (61.5)</strong>
-            </p>
-          </div>
-
-          {/* Grid of scores */}
-          <div style={{ padding: "12px", display: "flex", flexWrap: "wrap", gap: "4px" }}>
-            {ALL_SCORES.map((score, i) => {
-              const pos = i + 1;
-              const sp = specialPos[pos];
-              return (
-                <div key={i} style={{
-                  minWidth: "44px", height: "44px", borderRadius: "8px",
-                  display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-                  background: sp ? (sp.color === C.accent ? C.accentDim : sp.color === C.text ? "#f3f4f6" : "#f9fafb") : "transparent",
-                  border: `1.5px solid ${sp ? sp.color : C.border}`,
-                  position: "relative",
-                }}>
-                  <span style={{ fontSize: "13px", fontWeight: sp ? "800" : "500", color: sp ? sp.color : C.text, lineHeight: 1 }}>{score}</span>
-                  <span style={{ fontSize: "8px", color: sp ? sp.color : C.muted, lineHeight: 1, marginTop: "1px" }}>#{pos}</span>
-                  {sp && (
-                    <span style={{ position: "absolute", top: "-14px", left: "50%", transform: "translateX(-50%)",
-                      fontSize: "8px", fontWeight: "700", color: sp.color, whiteSpace: "nowrap",
-                      background: "#fff", padding: "0 2px", borderRadius: "3px" }}>
-                      {sp.label}
-                    </span>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
-          <div style={{ padding: "10px 12px", background: "#f9fafb", borderTop: `1px solid ${C.border}` }}>
-            <p style={{ fontSize: "12px", color: C.muted, margin: 0, lineHeight: 1.6 }}>
-              With 60 values (even), the median = average of positions 30 and 31 = (50 + 52) ÷ 2 = 51.
-              Q1 = average of positions 15 and 16 = (38 + 39) ÷ 2 = 38.5.
-              Q3 = average of positions 45 and 46 = (61 + 62) ÷ 2 = 61.5.
-            </p>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ── Collapsible ───────────────────────────────────────────────────────────
-function Reveal({ label, children }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div style={{ border: `1px solid ${C.border}`, borderRadius: "10px", marginBottom: "10px", overflow: "hidden" }}>
-      <button onClick={() => setOpen(!open)}
-        style={{ width: "100%", padding: "12px 14px", background: open ? C.accentDim : C.surface,
-          border: "none", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <span style={{ fontSize: "13px", fontWeight: "700", color: open ? C.accent : C.text }}>{label}</span>
-        <span style={{ fontSize: "12px", color: C.muted }}>{open ? "▲ Hide" : "▼ Show"}</span>
-      </button>
-      {open && <div style={{ padding: "14px", background: C.accentDim, borderTop: `1px solid ${C.border}` }}>{children}</div>}
-    </div>
-  );
-}
-
-// ── Median demo ───────────────────────────────────────────────────────────
-function MedianDemo() {
-  const [isOdd, setIsOdd] = useState(true);
-  const odd  = [22, 31, 38, 45, 51, 57, 63, 71, 80];
-  const even = [22, 31, 38, 45, 51, 57, 63, 71, 80, 88];
-  const data = isOdd ? odd : even;
-  const n = data.length;
-  const midL = Math.floor((n - 1) / 2);
-  const midR = Math.ceil((n - 1) / 2);
-  const median = (data[midL] + data[midR]) / 2;
-  return (
-    <div>
-      <div style={{ display: "flex", gap: "8px", marginBottom: "14px" }}>
-        {[true, false].map(o => (
-          <button key={String(o)} onClick={() => setIsOdd(o)}
-            style={{ flex: 1, padding: "8px", borderRadius: "8px", cursor: "pointer", fontSize: "12px", fontWeight: "600",
-              border: `1.5px solid ${isOdd === o ? C.accent : C.border}`,
-              background: isOdd === o ? "#fff" : "transparent",
-              color: isOdd === o ? C.accent : C.muted }}>
-            {o ? "Odd - 9 values" : "Even - 10 values"}
-          </button>
-        ))}
-      </div>
-      <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", justifyContent: "center", marginBottom: "14px" }}>
-        {data.map((v, i) => {
-          const isMiddle = i === midL || i === midR;
-          return (
-            <div key={i} style={{ width: "42px", height: "42px", borderRadius: "10px", display: "flex",
-              alignItems: "center", justifyContent: "center", fontSize: "13px",
-              fontWeight: isMiddle ? "800" : "500",
-              background: isMiddle ? C.accent : C.surface,
-              color: isMiddle ? "#fff" : C.muted,
-              border: `2px solid ${isMiddle ? C.accent : C.border}`,
-              boxShadow: isMiddle ? `0 0 0 3px ${C.accentDim}` : "none" }}>
-              {v}
-            </div>
-          );
-        })}
-      </div>
-      {isOdd ? (
-        <div style={{ background: "#fff", borderRadius: "10px", padding: "12px 14px" }}>
-          <p style={{ fontSize: "13px", color: C.text, margin: 0, lineHeight: 1.7 }}>
-            <strong style={{ color: C.accent }}>9 values (odd):</strong> the middle one is position 5. Median = <strong style={{ color: C.accent }}>{median}</strong>
-          </p>
-        </div>
-      ) : (
-        <div style={{ background: "#fff", borderRadius: "10px", padding: "12px 14px" }}>
-          <p style={{ fontSize: "13px", color: C.text, margin: 0, lineHeight: 1.7 }}>
-            <strong style={{ color: C.accent }}>10 values (even):</strong> average positions 5 and 6. ({data[midL]} + {data[midR]}) ÷ 2 = <strong style={{ color: C.accent }}>{median}</strong>
-          </p>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ── Step bubble ───────────────────────────────────────────────────────────
-function StepBubble({ n }) {
-  return (
-    <div style={{ width: "26px", height: "26px", borderRadius: "50%", background: C.accent, color: "#fff",
-      display: "flex", alignItems: "center", justifyContent: "center", fontSize: "13px", fontWeight: "800", flexShrink: 0 }}>
-      {n}
-    </div>
-  );
-}
 
 // ── Main ──────────────────────────────────────────────────────────────────
 export default function Learn() {
@@ -587,7 +305,7 @@ export default function Learn() {
       </div>
 
       {/* ── DATA TABLE ── */}
-      <ScoreTable />
+      <ScoreTable allScores={ALL_SCORES} />
 
       {/* ── STEP 1 ── */}
       <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
