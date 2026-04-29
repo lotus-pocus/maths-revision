@@ -245,10 +245,10 @@ function CumFreqGraph() {
             stroke={color} strokeWidth="1.5" strokeDasharray="5,3" opacity="0.7" />
           {/* Dot at intersection */}
           <circle cx={toX(score)} cy={toY(freq)} r="4" fill={color} />
-          {/* Label on x-axis — white bg rect to prevent overlap with regular ticks */}
+          {/* Label on x-axis - white bg rect to prevent overlap with regular ticks */}
           <rect x={toX(score)-10} y={toY(0)+20} width="20" height="13" fill="#fff" />
           <text x={toX(score)} y={toY(0)+31} textAnchor="middle" fill={color} fontSize="10" fontWeight="700">{score}</text>
-          {/* Label on y-axis — white bg rect to prevent overlap with regular ticks */}
+          {/* Label on y-axis - white bg rect to prevent overlap with regular ticks */}
           <rect x={padL-22} y={toY(freq)-7} width="18" height="13" fill="#fff" />
           <text x={padL-5} y={toY(freq)+4} textAnchor="end" fill={color} fontSize="10" fontWeight="700">{freq}</text>
         </g>

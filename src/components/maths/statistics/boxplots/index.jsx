@@ -1,12 +1,21 @@
 import { useState } from "react";
 import { C } from "./data";
-import Learn    from "./Learn";
+import Learn     from "./Learn";
 import RealWorld from "./RealWorld";
 import BuildIt   from "./BuildIt";
 import Exam      from "./Exam";
 
+const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
+
 export default function BoxPlotVisualiser() {
   const [mode, setMode] = useState("learn");
+  const [resetKey, setResetKey] = useState(0);
+
+  const switchTab = (id) => {
+    setMode(id);
+    setResetKey(k => k + 1);
+    scrollToTop();
+  };
 
   return (
     <div style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", color: C.text }}>
@@ -35,7 +44,7 @@ export default function BoxPlotVisualiser() {
           ].map(({ id, label }) => (
             <button
               key={id}
-              onClick={() => setMode(id)}
+              onClick={() => switchTab(id)}
               style={{
                 flex: 1, padding: "9px 4px",
                 background: mode === id ? C.accent : "transparent",
@@ -51,10 +60,10 @@ export default function BoxPlotVisualiser() {
         </div>
 
         {/* Tab content */}
-        {mode === "learn"    && <Learn />}
-        {mode === "hospital" && <RealWorld />}
-        {mode === "build"    && <BuildIt />}
-        {mode === "exam"     && <Exam />}
+        {mode === "learn"    && <Learn    key={`learn-${resetKey}`} />}
+        {mode === "hospital" && <RealWorld key={`hospital-${resetKey}`} />}
+        {mode === "build"    && <BuildIt  key={`build-${resetKey}`} />}
+        {mode === "exam"     && <Exam     key={`exam-${resetKey}`} />}
 
       </div>
     </div>

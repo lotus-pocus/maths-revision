@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { C } from "./data";
 import BoxPlotSVG from "./shared/BoxPlotSVG";
 
+const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
+
 // ── Scenarios ─────────────────────────────────────────────────────────────
 const SCENARIOS = [
   {
@@ -9,7 +11,7 @@ const SCENARIOS = [
     icon: "🏥",
     title: "Hospital Waiting Times",
     hook: "You work for the NHS. Your job is to compare two hospitals.",
-    setup: "Patients in A&E are waiting to be seen. You collect the waiting times (in minutes) from a sample of 15 patients at City Hospital. The data comes in the order patients arrived — not in any useful order.",
+    setup: "Patients in A&E are waiting to be seen. You collect the waiting times (in minutes) from a sample of 15 patients at City Hospital. The data comes in the order patients arrived - not in any useful order.",
     unit: "minutes",
     unitShort: "min",
     rawData: [67, 23, 41, 88, 15, 54, 31, 72, 19, 45, 60, 38, 80, 27, 52],
@@ -18,14 +20,14 @@ const SCENARIOS = [
     answer: { min: 15, q1: 27, median: 45, q3: 67, max: 88 },
     whySortExplain: "We sort the data so we can find the middle value (median) and the quartiles. If the numbers are jumbled, it's impossible to tell which value is in the middle. Sorting is always the first step.",
     contextExplain: {
-      min: "15 minutes — this was the fastest patient seen. One person got lucky, or arrived at a quiet moment.",
+      min: "15 minutes - this was the fastest patient seen. One person got lucky, or arrived at a quiet moment.",
       q1: "Q1 = 27 minutes means 25% of patients (about 1 in 4) were seen in under 27 minutes. Most people had to wait longer.",
-      median: "Median = 45 minutes is the typical waiting time — half of patients waited less, half waited more. This is the number a hospital manager cares most about. The NHS target is 4 hours (240 min), so 45 min sounds fine — but is it consistent?",
-      q3: "Q3 = 67 minutes means 75% of patients waited under 67 minutes. That also means 1 in 4 patients waited over an hour — which matters a lot.",
-      iqr: "IQR = 67 − 27 = 40 minutes. This is a wide spread — the middle 50% of patients waited anywhere from 27 to 67 minutes. That's inconsistent. Some are seen quickly, others wait a long time.",
-      max: "88 minutes — someone waited nearly 1.5 hours. The maximum shows the worst case.",
+      median: "Median = 45 minutes is the typical waiting time - half of patients waited less, half waited more. This is the number a hospital manager cares most about. The NHS target is 4 hours (240 min), so 45 min sounds fine - but is it consistent?",
+      q3: "Q3 = 67 minutes means 75% of patients waited under 67 minutes. That also means 1 in 4 patients waited over an hour - which matters a lot.",
+      iqr: "IQR = 67 − 27 = 40 minutes. This is a wide spread - the middle 50% of patients waited anywhere from 27 to 67 minutes. That's inconsistent. Some are seen quickly, others wait a long time.",
+      max: "88 minutes - someone waited nearly 1.5 hours. The maximum shows the worst case.",
     },
-    decisionText: "A manager seeing this data would ask: why is there such a big gap between the fastest and slowest? The IQR of 40 minutes suggests staffing is uneven — some shifts are much busier than others.",
+    decisionText: "A manager seeing this data would ask: why is there such a big gap between the fastest and slowest? The IQR of 40 minutes suggests staffing is uneven - some shifts are much busier than others.",
     scaleMin: 0, scaleMax: 100,
   },
   {
@@ -33,20 +35,20 @@ const SCENARIOS = [
     icon: "🏫",
     title: "Exam Scores",
     hook: "You're a teacher reviewing your class's maths test results.",
-    setup: "Year 11 have just sat a practice paper marked out of 60. The results came back in register order — not sorted. You need to understand how the class did and whether the test was pitched at the right level.",
+    setup: "Year 11 have just sat a practice paper marked out of 60. The results came back in register order - not sorted. You need to understand how the class did and whether the test was pitched at the right level.",
     unit: "marks",
     unitShort: "marks",
     rawData: [48, 22, 35, 54, 18, 41, 30, 56, 27, 44, 38, 52, 33, 19, 46],
     sorted:  [18, 19, 22, 27, 30, 33, 35, 38, 41, 44, 46, 48, 52, 54, 56],
     answer: { min: 18, q1: 27, median: 38, q3: 48, max: 56 },
-    whySortExplain: "Exam scores arrive in any order. To find who is in the middle — the median — we need to rank them from lowest to highest first. It's the same as lining pupils up by height: you can't find the person in the middle until everyone is standing in order.",
+    whySortExplain: "Exam scores arrive in any order. To find who is in the middle - the median - we need to rank them from lowest to highest first. It's the same as lining pupils up by height: you can't find the person in the middle until everyone is standing in order.",
     contextExplain: {
-      min: "18 marks — the lowest score. One student really struggled. The teacher would want to speak to them.",
-      q1: "Q1 = 27 marks means a quarter of the class scored under 27. These students are below the lower quartile — a priority for extra support.",
-      median: "Median = 38 marks out of 60 is roughly 63%. Half the class scored above 38, half below. For a practice paper, this might be acceptable — or it might suggest the paper was too hard.",
-      q3: "Q3 = 48 means 75% of the class scored under 48. Only the top quarter scored 48 or above — so the highest marks weren't common.",
-      iqr: "IQR = 48 − 27 = 21 marks. The middle half of the class had quite a spread of results. This suggests mixed ability — some pupils are much stronger than others, which affects how the teacher plans the next lesson.",
-      max: "56 marks — a strong performance. The range is 56 − 18 = 38, which is large. There's a big gap between the best and worst in the class.",
+      min: "18 marks - the lowest score. One student really struggled. The teacher would want to speak to them.",
+      q1: "Q1 = 27 marks means a quarter of the class scored under 27. These students are below the lower quartile - a priority for extra support.",
+      median: "Median = 38 marks out of 60 is roughly 63%. Half the class scored above 38, half below. For a practice paper, this might be acceptable - or it might suggest the paper was too hard.",
+      q3: "Q3 = 48 means 75% of the class scored under 48. Only the top quarter scored 48 or above - so the highest marks weren't common.",
+      iqr: "IQR = 48 − 27 = 21 marks. The middle half of the class had quite a spread of results. This suggests mixed ability - some pupils are much stronger than others, which affects how the teacher plans the next lesson.",
+      max: "56 marks - a strong performance. The range is 56 − 18 = 38, which is large. There's a big gap between the best and worst in the class.",
     },
     decisionText: "The teacher might decide: the median is OK, but the wide IQR means some pupils need differentiated work. The bottom quarter (below 27) needs targeted intervention before the real exam.",
     scaleMin: 0, scaleMax: 70,
@@ -56,20 +58,20 @@ const SCENARIOS = [
     icon: "📦",
     title: "Delivery Times",
     hook: "You run a small business. Customers are complaining about slow deliveries.",
-    setup: "You track how many days it takes for 15 orders to arrive after dispatch. The data is listed in order of dispatch date — not sorted by delivery time.",
+    setup: "You track how many days it takes for 15 orders to arrive after dispatch. The data is listed in order of dispatch date - not sorted by delivery time.",
     unit: "days",
     unitShort: "days",
     rawData: [4, 2, 7, 3, 9, 5, 2, 6, 3, 11, 4, 8, 2, 5, 6],
     sorted:  [2, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 8, 9, 11],
     answer: { min: 2, q1: 3, median: 5, q3: 6, max: 11 },
-    whySortExplain: "Dispatch dates are in time order — but that doesn't tell us anything about speed. We sort by delivery time so we can see the range from fastest to slowest. Only then can we find the median and quartiles.",
+    whySortExplain: "Dispatch dates are in time order - but that doesn't tell us anything about speed. We sort by delivery time so we can see the range from fastest to slowest. Only then can we find the median and quartiles.",
     contextExplain: {
-      min: "2 days — the fastest deliveries. Three orders arrived in just 2 days. If the courier can do this sometimes, why not always?",
-      q1: "Q1 = 3 days — a quarter of orders arrived within 3 days. These customers were happy.",
-      median: "Median = 5 days — the typical delivery. Half of orders took less than 5 days, half took more. You could promise customers '5 days' and be right about half the time.",
-      q3: "Q3 = 6 days — 75% of orders arrived within 6 days. But 25% took longer — those are the complaints.",
-      iqr: "IQR = 6 − 3 = 3 days. The middle half of deliveries ranged from 3 to 6 days. That's actually quite consistent — most orders arrive in a predictable window.",
-      max: "11 days — one order took nearly 2 weeks. That's the outlier causing your worst complaints. The whisker from Q3 to Max (6 to 11) is long, showing a tail of slow deliveries.",
+      min: "2 days - the fastest deliveries. Three orders arrived in just 2 days. If the courier can do this sometimes, why not always?",
+      q1: "Q1 = 3 days - a quarter of orders arrived within 3 days. These customers were happy.",
+      median: "Median = 5 days - the typical delivery. Half of orders took less than 5 days, half took more. You could promise customers '5 days' and be right about half the time.",
+      q3: "Q3 = 6 days - 75% of orders arrived within 6 days. But 25% took longer - those are the complaints.",
+      iqr: "IQR = 6 − 3 = 3 days. The middle half of deliveries ranged from 3 to 6 days. That's actually quite consistent - most orders arrive in a predictable window.",
+      max: "11 days - one order took nearly 2 weeks. That's the outlier causing your worst complaints. The whisker from Q3 to Max (6 to 11) is long, showing a tail of slow deliveries.",
     },
     decisionText: "The business owner might conclude: most deliveries are fine (IQR of 3 days), but there are occasional outliers that cause problems. The focus should be on eliminating the very slow deliveries, not fixing the typical ones.",
     scaleMin: 0, scaleMax: 15,
@@ -120,7 +122,7 @@ function Step1({ s, onNext }) {
       </div>
 
       <p style={{ fontSize: "13px", color: C.muted, lineHeight: 1.6, marginBottom: "20px" }}>
-        These numbers are in the order they arrived — not in any useful order. Before we can find the median or quartiles, we need to sort them.
+        These numbers are in the order they arrived - not in any useful order. Before we can find the median or quartiles, we need to sort them.
       </p>
 
       <button onClick={onNext} style={{ width: "100%", padding: "14px", background: C.accent, color: "#fff",
@@ -199,21 +201,21 @@ function Step3({ s, onNext }) {
 
   const items = [
     { key: "min", label: "Minimum", value: min, hint: "The first (smallest) number in the sorted list." },
-    { key: "q1", label: "Q1 — Lower Quartile", value: q1, hint: `Take the bottom half of the data (below the median). Find the middle of those values. Here that's ${q1} ${s.unitShort}.` },
-    { key: "median", label: "Median", value: median, hint: `${s.sorted.length} values — odd number. The middle one is position ${Math.floor(s.sorted.length / 2) + 1} = ${median} ${s.unitShort}.` },
-    { key: "q3", label: "Q3 — Upper Quartile", value: q3, hint: `Take the upper half of the data (above the median). Find the middle of those values. Here that's ${q3} ${s.unitShort}.` },
+    { key: "q1", label: "Q1 - Lower Quartile", value: q1, hint: `Take the bottom half of the data (below the median). Find the middle of those values. Here that's ${q1} ${s.unitShort}.` },
+    { key: "median", label: "Median", value: median, hint: `${s.sorted.length} values - odd number. The middle one is position ${Math.floor(s.sorted.length / 2) + 1} = ${median} ${s.unitShort}.` },
+    { key: "q3", label: "Q3 - Upper Quartile", value: q3, hint: `Take the upper half of the data (above the median). Find the middle of those values. Here that's ${q3} ${s.unitShort}.` },
     { key: "max", label: "Maximum", value: max, hint: "The last (largest) number in the sorted list." },
     { key: "iqr", label: "IQR", value: iqr, hint: `IQR = Q3 − Q1 = ${q3} − ${q1} = ${iqr} ${s.unitShort}` },
   ];
 
   return (
     <div>
-      <Hint title="💡 How to find each value — step by step" color="green">
+      <Hint title="💡 How to find each value - step by step" color="green">
         <p style={{ fontSize: "13px", color: C.accent, margin: "0 0 8px", lineHeight: 1.6 }}>
           <strong>Median:</strong> The middle value of all the data when sorted.<br />
           <strong>Q1:</strong> The median of the bottom half (values below the median).<br />
           <strong>Q3:</strong> The median of the top half (values above the median).<br />
-          <strong>IQR:</strong> Q3 − Q1 — tells you how spread out the middle 50% are.
+          <strong>IQR:</strong> Q3 − Q1 - tells you how spread out the middle 50% are.
         </p>
       </Hint>
 
@@ -222,7 +224,7 @@ function Step3({ s, onNext }) {
           {["min","q1","median","q3","iqr","max"].map(k => (
             <div key={k} style={{ borderBottom: `1px solid #fde68a`, paddingBottom: "8px" }}>
               <p style={{ fontSize: "12px", fontWeight: "700", color: "#92400e", margin: "0 0 2px" }}>
-                {items.find(i => i.key === k)?.label} = {s.contextExplain[k].split("—")[0]}
+                {items.find(i => i.key === k)?.label} = {s.contextExplain[k].split("-")[0]}
               </p>
               <p style={{ fontSize: "12px", color: "#78350f", margin: 0, lineHeight: 1.6 }}>{s.contextExplain[k]}</p>
             </div>
@@ -343,11 +345,11 @@ export default function RealWorld() {
     return (
       <div>
         <p style={{ fontSize: "13px", color: C.muted, marginBottom: "16px", lineHeight: 1.6 }}>
-          Choose a real-world situation. You'll work through the data step-by-step — sorting it, finding Q1, median and Q3, then building the box plot.
+          Choose a real-world situation. You'll work through the data step-by-step - sorting it, finding Q1, median and Q3, then building the box plot.
         </p>
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
           {SCENARIOS.map(s => (
-            <button key={s.id} onClick={() => { setSelected(s.id); setStep(0); }}
+            <button key={s.id} onClick={() => { setSelected(s.id); setStep(0); scrollToTop(); }}
               style={{ padding: "16px", background: C.surface, border: `1px solid ${C.border}`,
                 borderRadius: "12px", cursor: "pointer", textAlign: "left", display: "flex", gap: "14px", alignItems: "center" }}>
               <span style={{ fontSize: "28px", flexShrink: 0 }}>{s.icon}</span>
@@ -369,7 +371,7 @@ export default function RealWorld() {
     <div>
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
-        <button onClick={() => setSelected(null)}
+        <button onClick={() => { setSelected(null); scrollToTop(); }}
           style={{ background: "transparent", border: `1px solid ${C.border}`, borderRadius: "8px",
             padding: "6px 10px", cursor: "pointer", color: C.muted, fontSize: "12px" }}>
           ← Back
@@ -383,10 +385,10 @@ export default function RealWorld() {
 
       <StepBar step={step} total={4} />
 
-      {step === 0 && <Step1 s={s} onNext={() => setStep(1)} />}
-      {step === 1 && <Step2 s={s} onNext={() => setStep(2)} />}
-      {step === 2 && <Step3 s={s} onNext={() => setStep(3)} />}
-      {step === 3 && <Step4 s={s} onRestart={() => { setSelected(null); setStep(0); }} />}
+      {step === 0 && <Step1 s={s} onNext={() => { setStep(1); scrollToTop(); }} />}
+      {step === 1 && <Step2 s={s} onNext={() => { setStep(2); scrollToTop(); }} />}
+      {step === 2 && <Step3 s={s} onNext={() => { setStep(3); scrollToTop(); }} />}
+      {step === 3 && <Step4 s={s} onRestart={() => { setSelected(null); setStep(0); scrollToTop(); }} />}
     </div>
   );
 }
