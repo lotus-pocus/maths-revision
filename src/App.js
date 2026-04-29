@@ -5,8 +5,10 @@ import "./App.css";
 
 function App() {
   return (
-    <div style={{ maxWidth: 700, margin: "0 auto", padding: "20px 16px" }}>
-      <BoxPlotVisualiser />
+    <div className="app">
+      <div className="main-content">
+        <BoxPlotVisualiser />
+      </div>
     </div>
   );
 }
