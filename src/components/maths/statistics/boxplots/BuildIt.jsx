@@ -3,8 +3,28 @@ import { C, BUILD_QUESTIONS, TOLERANCE } from "./data";
 import BoxPlotSVG from "./shared/BoxPlotSVG";
 import CumFreqGraph from "./shared/CumFreqGraph";
 
+
+function BottomNav({ onBack, onNext, nextLabel = "Next →", backLabel = "← Back", showBack = true }) {
+  return (
+    <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
+      {showBack && (
+        <button onClick={onBack} style={{ flex: 1, padding: "14px", background: "transparent", color: C.muted,
+          border: `1.5px solid ${C.border}`, borderRadius: "10px", fontSize: "14px", fontWeight: "700", cursor: "pointer" }}>
+          {backLabel}
+        </button>
+      )}
+      {onNext && (
+        <button onClick={onNext} style={{ flex: 1, padding: "14px", background: C.accent, color: C.bg,
+          border: "none", borderRadius: "10px", fontSize: "14px", fontWeight: "700", cursor: "pointer" }}>
+          {nextLabel}
+        </button>
+      )}
+    </div>
+  );
+}
+
 // ── Stage 0: Read the cumulative frequency graph ──────────────────────────
-function StageReadGraph({ q, onComplete }) {
+function StageReadGraph({ q, onBack, onComplete }) {
   const [revealed, setRevealed] = useState(false);
 
   const cf = q.cumFreq;
@@ -85,9 +105,7 @@ function StageReadGraph({ q, onComplete }) {
             </p>
           </div>
 
-          <button onClick={onComplete} style={{ width: "100%", padding: "14px", background: C.accent, color: C.bg, border: "none", borderRadius: "10px", fontSize: "14px", fontWeight: "700", cursor: "pointer" }}>
-            Continue to Stage 1 — Order the data →
-          </button>
+          <BottomNav onBack={onBack} onNext={onComplete} backLabel="← Back to questions" nextLabel="Continue to Stage 1 — Order the data →" />
         </div>
       )}
     </div>
@@ -95,7 +113,7 @@ function StageReadGraph({ q, onComplete }) {
 }
 
 // ── Stage 1: Tap to order ─────────────────────────────────────────────────
-function StageOrder({ q, onComplete }) {
+function StageOrder({ q, onBack, onComplete }) {
   const shuffled = React.useMemo(() => [...q.rawData].sort(() => Math.random() - 0.5), [q]);
   const [remaining, setRemaining] = useState(shuffled);
   const [ordered,   setOrdered]   = useState([]);
@@ -163,9 +181,7 @@ function StageOrder({ q, onComplete }) {
             <p style={{ fontSize: "14px", fontWeight: "700", color: "#15803d", margin: "0 0 4px" }}>✓ Perfectly ordered!</p>
             <p style={{ fontSize: "13px", color: C.text, margin: 0 }}>Notice how Min, Q1, Median, Q3 and Max match exactly what the graph told you in Stage 0.</p>
           </div>
-          <button onClick={onComplete} style={{ width: "100%", padding: "14px", background: C.accent, color: C.bg, border: "none", borderRadius: "10px", fontSize: "14px", fontWeight: "700", cursor: "pointer" }}>
-            Continue to Stage 2 →
-          </button>
+          <BottomNav onBack={onBack} onNext={onComplete} nextLabel="Continue to Stage 2 →" />
         </div>
       )}
     </div>
@@ -173,7 +189,7 @@ function StageOrder({ q, onComplete }) {
 }
 
 // ── Stage 2: Find the 5 values ────────────────────────────────────────────
-function StageFive({ q, onComplete }) {
+function StageFive({ q, onBack, onComplete }) {
   const sorted = [...q.rawData].sort((a, b) => a - b);
   const KEYS   = ["min", "q1", "median", "q3", "max"];
   const LABELS = { min: "Minimum", q1: "Q1 (Lower Quartile)", median: "Median", q3: "Q3 (Upper Quartile)", max: "Maximum" };
@@ -211,18 +227,21 @@ function StageFive({ q, onComplete }) {
           );
         })}
       </div>
-      {!checked
-        ? <button onClick={() => setChecked(true)} style={{ width: "100%", padding: "13px", background: C.accent, color: C.bg, border: "none", borderRadius: "10px", fontSize: "14px", fontWeight: "700", cursor: "pointer" }}>Check my answers</button>
-        : <button onClick={() => { if (allOk) onComplete(); else setChecked(false); }} style={{ width: "100%", padding: "13px", background: allOk ? C.accent : C.surface, color: allOk ? C.bg : C.muted, border: allOk ? "none" : `1px solid ${C.border}`, borderRadius: "10px", fontSize: "14px", fontWeight: "700", cursor: "pointer" }}>
-            {allOk ? "Continue to Stage 3 →" : "Try again"}
-          </button>
-      }
+      {!checked ? (
+        <BottomNav onBack={onBack} onNext={() => setChecked(true)} nextLabel="Check my answers" />
+      ) : (
+        <BottomNav
+          onBack={onBack}
+          onNext={() => { if (allOk) onComplete(); else setChecked(false); }}
+          nextLabel={allOk ? "Continue to Stage 3 →" : "Try again"}
+        />
+      )}
     </div>
   );
 }
 
 // ── Stage 3: Drag to place ────────────────────────────────────────────────
-function StageDrag({ q }) {
+function StageDrag({ q, onBack }) {
   const initVals = () => ({
     min:    q.scaleMin + Math.round((q.scaleMax - q.scaleMin) * 0.15),
     q1:     q.scaleMin + Math.round((q.scaleMax - q.scaleMin) * 0.30),
@@ -317,6 +336,7 @@ function StageDrag({ q }) {
       </button>
       {showHint && <div style={{ background: C.surface, borderRadius: "8px", padding: "10px 14px", marginBottom: "12px" }}><p style={{ fontSize: "13px", color: C.text, margin: 0 }}>{q.hint}</p></div>}
       <div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
+        <button onClick={onBack} style={{ flex: 1, padding: "13px", background: "transparent", color: C.muted, border: `1px solid ${C.border}`, borderRadius: "10px", fontSize: "14px", fontWeight: "700", cursor: "pointer" }}>← Back</button>
         <button onClick={() => setChecked(true)} style={{ flex: 2, padding: "13px", background: C.accent, color: C.bg, border: "none", borderRadius: "10px", fontSize: "14px", fontWeight: "700", cursor: "pointer" }}>Check my answer</button>
         <button onClick={reset} style={{ flex: 1, padding: "13px", background: C.surface, color: C.muted, border: `1px solid ${C.border}`, borderRadius: "10px", fontSize: "14px", cursor: "pointer" }}>Reset</button>
       </div>
@@ -405,10 +425,10 @@ export default function BuildIt() {
     <div>
       <button onClick={() => setQIdx(null)} style={{ background: "none", border: "none", cursor: "pointer", color: C.muted, fontSize: "13px", padding: "0 0 16px", display: "flex", alignItems: "center", gap: "4px" }}>← Back to questions</button>
       <StageBar />
-      {stage === 0 && <StageReadGraph q={q} onComplete={() => setStage(1)} />}
-      {stage === 1 && <StageOrder     q={q} onComplete={() => setStage(2)} />}
-      {stage === 2 && <StageFive      q={q} onComplete={() => setStage(3)} />}
-      {stage === 3 && <StageDrag      q={q} />}
+      {stage === 0 && <StageReadGraph q={q} onBack={() => { setQIdx(null); setStage(0); }} onComplete={() => setStage(1)} />}
+      {stage === 1 && <StageOrder     q={q} onBack={() => setStage(0)} onComplete={() => setStage(2)} />}
+      {stage === 2 && <StageFive      q={q} onBack={() => setStage(1)} onComplete={() => setStage(3)} />}
+      {stage === 3 && <StageDrag      q={q} onBack={() => setStage(2)} />}
     </div>
   );
 }

@@ -6,6 +6,15 @@ import GlossaryTerm from "./GlossaryTerm";
 
 const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
+function BottomBack({ onBack, label = "← Back" }) {
+  return (
+    <button onClick={onBack} style={{ width: "100%", marginTop: "20px", padding: "14px", background: "transparent",
+      border: `1.5px solid ${C.border}`, borderRadius: "10px", color: C.muted, fontSize: "14px", fontWeight: "700", cursor: "pointer" }}>
+      {label}
+    </button>
+  );
+}
+
 // ── Draw a box plot ───────────────────────────────────────────────────────
 function ExamPractice({ question, onBack }) {
   const [revealed, setRevealed] = useState(false);
@@ -65,6 +74,7 @@ function ExamPractice({ question, onBack }) {
           </div>
         </div>
       )}
+      <BottomBack onBack={onBack} />
     </div>
   );
 }
@@ -158,6 +168,7 @@ function CompareQuestion({ question, onBack }) {
           )}
         </div>
       )}
+      <BottomBack onBack={onBack} />
     </div>
   );
 }
@@ -262,6 +273,7 @@ function ReadTheGraph({ question, onBack }) {
           </div>
         </div>
       )}
+      <BottomBack onBack={onBack} />
     </div>
   );
 }
@@ -467,6 +479,7 @@ function ReadBarChart({ question, onBack }) {
           </div>
         </div>
       )}
+      <BottomBack onBack={onBack} />
     </div>
   );
 }

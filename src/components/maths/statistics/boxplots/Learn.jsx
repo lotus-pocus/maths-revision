@@ -4,42 +4,83 @@ import GlossaryTerm from "./GlossaryTerm";
 
 // ── Data ──────────────────────────────────────────────────────────────────
 // 60 scores: 30 per class, consistent with box plot values
-// Class A: min 44, Q1 56, median 63, Q3 69, max 81
-// Class B: min 14, Q1 27, median 41, Q3 55, max 91
+// Combined: min 14, Q1 38.5 (avg pos 15+16 = 38+39), median 51 (avg pos 30+31 = 50+52), Q3 61.5 (avg pos 45+46 = 61+62), max 91
+// Class A: min 42, Q1 56, median 61, Q3 67, max 74
+// Class B: min 14, Q1 27, median 38.5, Q3 48, max 91
 const CLASS_A_SCORES = [
-  44, 48, 51, 53, 55, 56, 57, 58, 59, 60,
-  61, 62, 63, 64, 65, 66, 67, 68, 69, 69,
-  70, 71, 72, 73, 74, 75, 76, 77, 79, 81,
+  42, 44, 52, 53, 54, 55, 56, 56, 57, 58,
+  59, 60, 60, 61, 61, 61, 61, 62, 63, 64,
+  65, 66, 67, 68, 68, 69, 70, 71, 72, 74,
 ];
 const CLASS_B_SCORES = [
-  14, 18, 21, 24, 26, 27, 28, 30, 32, 34,
-  36, 38, 40, 41, 42, 44, 46, 48, 50, 52,
-  54, 55, 57, 59, 62, 65, 68, 72, 80, 91,
+  14, 18, 21, 24, 26, 27, 27, 27, 28, 30,
+  32, 34, 35, 36, 38, 39, 41, 44, 46, 46,
+  47, 48, 48, 49, 49, 49, 49, 50, 80, 91,
 ];
 const ALL_SCORES = [...CLASS_A_SCORES, ...CLASS_B_SCORES].sort((a, b) => a - b);
 
-const YEAR    = { min: 14, q1: 38, median: 51, q3: 62, max: 91, label: "Whole year group (60 students)", color: C.accent };
-const CLASS_A = { min: 44, q1: 56, median: 63, q3: 69, max: 81, label: "Class 11A", color: C.accent };
-const CLASS_B = { min: 14, q1: 27, median: 41, q3: 55, max: 91, label: "Class 11B", color: "#d97706" };
+function medianOfSorted(arr) {
+  const n = arr.length;
+  const mid = Math.floor(n / 2);
+
+  if (n % 2 === 1) {
+    return arr[mid];
+  }
+
+  return (arr[mid - 1] + arr[mid]) / 2;
+}
+
+function fiveNumberSummary(values) {
+  const sorted = [...values].sort((a, b) => a - b);
+  const n = sorted.length;
+  const lowerHalf = sorted.slice(0, n / 2);
+  const upperHalf = sorted.slice(n / 2);
+
+  return {
+    min: sorted[0],
+    q1: medianOfSorted(lowerHalf),
+    median: medianOfSorted(sorted),
+    q3: medianOfSorted(upperHalf),
+    max: sorted[sorted.length - 1],
+  };
+}
+
+const YEAR = {
+  ...fiveNumberSummary(ALL_SCORES),
+  label: "Whole year group (60 students)",
+  color: C.accent,
+};
+
+const CLASS_A = {
+  ...fiveNumberSummary(CLASS_A_SCORES),
+  label: "Class 11A",
+  color: C.accent,
+};
+
+const CLASS_B = {
+  ...fiveNumberSummary(CLASS_B_SCORES),
+  label: "Class 11B",
+  color: "#d97706",
+};
 
 // Cumulative frequency points for the whole year (60 students)
 const CUM_FREQ_POINTS = [
-  [0, 0], [10, 0], [14, 0], [20, 2], [27, 8], [38, 15],
-  [41, 18], [51, 30], [55, 36], [62, 45], [72, 52], [81, 57], [91, 60],
+  [0, 0], [10, 0], [14, 1], [20, 2], [27, 8], [38, 15],
+  [41, 17], [50, 30], [55, 34], [62, 46], [72, 57], [81, 59], [91, 60],
 ];
 
 // Bar chart bands: score ranges and counts
 const BAR_BANDS = [
   { label: "0-9",   count: 0 },
   { label: "10-19", count: 2 },
-  { label: "20-29", count: 6 },
+  { label: "20-29", count: 7 },
   { label: "30-39", count: 7 },
-  { label: "40-49", count: 9 },
-  { label: "50-59", count: 11 },
-  { label: "60-69", count: 13 },
-  { label: "70-79", count: 7 },
-  { label: "80-89", count: 3 },
-  { label: "90-99", count: 2 },
+  { label: "40-49", count: 13 },
+  { label: "50-59", count: 10 },
+  { label: "60-69", count: 15 },
+  { label: "70-79", count: 4 },
+  { label: "80-89", count: 1 },
+  { label: "90-99", count: 1 },
 ];
 
 const PARTS = [
@@ -60,8 +101,8 @@ const PART_CONTENT = {
   },
   q1: {
     definition: "Q1 stands for 'first quarter.' It is the value that splits the bottom 25% of data from the rest. One quarter of all results fall below Q1.",
-    headline: "Q1 = 38 - the bottom quarter boundary",
-    explain: "One quarter (25%) of students scored below 38. These are the students who need most support. As a teacher, you'd want to know: are they all in the same class? Have they been absent a lot? The box plot gives you the boundary. It's your job to ask why those students are there.",
+    headline: "Q1 = 38.5 - the bottom quarter boundary",
+    explain: "One quarter (25%) of students scored below 38.5. These are the students who need most support. As a teacher, you'd want to know: are they all in the same class? Have they been absent a lot? The box plot gives you the boundary. It's your job to ask why those students are there.",
     examTip: "25% of values fall below Q1. To find it: take the lower half of sorted data and find its median.",
   },
   median: {
@@ -72,20 +113,20 @@ const PART_CONTENT = {
   },
   q3: {
     definition: "Q3 stands for 'third quarter.' It is the value that splits the top 25% of data from the rest. Three quarters of all results fall below Q3.",
-    headline: "Q3 = 62 - the upper quarter boundary",
-    explain: "75% of students scored below 62. Only the top quarter scored higher. If you'd expect strong students to be hitting 75+, a Q3 of 62 suggests even the better-performing students have gaps. The right whisker stretches all the way to 91, which means a small number of students are far ahead of everyone else.",
+    headline: "Q3 = 61.5 - the upper quarter boundary",
+    explain: "75% of students scored below 61.5. Only the top quarter scored higher. If you'd expect strong students to be hitting 75+, a Q3 of 62 suggests even the better-performing students have gaps. The right whisker stretches all the way to 91, which means a small number of students are far ahead of everyone else.",
     examTip: "75% of values fall below Q3. To find it: take the upper half of sorted data and find its median.",
   },
   iqr: {
     definition: "IQR stands for Interquartile Range. It is the distance between Q1 and Q3, calculated as IQR = Q3 - Q1. It measures how spread out the middle 50% of the data is.",
-    headline: "IQR = 24 - the middle 50% spread across 24 marks",
-    explain: "IQR = Q3 - Q1 = 62 - 38 = 24. The middle half of the year scored anywhere between 38 and 62. That 24-mark gap means results are inconsistent. The big question is: is this because the two classes are very different from each other? Or are both classes equally spread? A single box plot can't answer that - but splitting by class will.",
+    headline: "IQR = 23 - the middle 50% spread across 23 marks",
+    explain: "IQR = Q3 - Q1 = 61.5 - 38.5 = 23. The middle half of the year scored anywhere between 38.5 and 61.5. That 23-mark gap means results are quite spread out. The big question is: is this because the two classes are very different from each other? Or are both classes equally spread? A single box plot can't answer that - but splitting by class will.",
     examTip: "Always write IQR = Q3 - Q1 and show your working. Smaller IQR = more consistent results.",
   },
   max: {
     definition: "The largest value in the data set. Shown as the right end of the right whisker.",
     headline: "Maximum = 91 - the top score",
-    explain: "One student scored 91. The long right whisker (Q3 is 62, max is 91) shows that a small number of high performers are well ahead of the pack. These might be students with tutors, students who find maths easier, or simply students who revised more. The box plot flags the gap - it doesn't explain it.",
+    explain: "One student scored 91. The long right whisker (Q3 is 61.5, max is 91) shows that a small number of high performers are well ahead of the pack. These might be students with tutors, students who find maths easier, or simply students who revised more. The box plot flags the gap - it doesn't explain it.",
     examTip: "Max is the right whisker end. Range = Max - Min = the total spread of all values.",
   },
 };
@@ -218,10 +259,12 @@ function CumFreqGraph() {
   const pts = CUM_FREQ_POINTS;
   const pathD = pts.map(([s, f], i) => `${i === 0 ? "M" : "L"} ${toX(s)} ${toY(f)}`).join(" ");
 
-  // Key read-off lines: Q1=38/15, Median=51/30, Q3=62/45
+  // Key read-off lines for a cumulative frequency graph.
+  // These are estimates read from the graph, so they do not have to match the exact raw-data quartiles perfectly.
+  // Q1 uses 1/4 of 60 = 15, Median uses 1/2 of 60 = 30, Q3 uses 3/4 of 60 = 45.
   const readOffs = [
     { score: 38, freq: 15, label: "Q1", color: C.accent },
-    { score: 51, freq: 30, label: "Median", color: C.text },
+    { score: 50, freq: 30, label: "Median", color: C.text },
     { score: 62, freq: 45, label: "Q3", color: C.accent },
   ];
 
@@ -271,7 +314,7 @@ function CumFreqGraph() {
       ))}
 
       {/* X-axis ticks + labels */}
-      {xTicks.filter(t => ![38, 51, 62].includes(t)).map(t => (
+      {xTicks.filter(t => ![38, 50, 62].includes(t)).map(t => (
         <g key={t}>
           <line x1={toX(t)} y1={toY(0)} x2={toX(t)} y2={toY(0)+4} stroke={C.muted} strokeWidth="1.5" />
           <text x={toX(t)} y={toY(0)+14} textAnchor="middle" fill={C.muted} fontSize="9">{t}</text>
@@ -295,7 +338,7 @@ function BarChart() {
   const toY = (count) => padT + plotH - (count / maxCount) * plotH;
   const yTicks = [0, 3, 6, 9, 12];
 
-  // highlight bars that contain Q1 (38), median (51), Q3 (62)
+  // highlight bars that contain Q1 (38.5), median (51), Q3 (61.5)
   const isKeyBand = (label) => {
     if (label === "30-39") return "q1";
     if (label === "50-59") return "median";
@@ -367,8 +410,10 @@ function ScoreTable() {
   const specialPos = {
     1:  { label: "Min",    color: C.muted },
     15: { label: "Q1",     color: C.accent },
+    16: { label: "Q1",     color: C.accent },
     30: { label: "Median", color: C.text },
     31: { label: "Median", color: C.text },
+    45: { label: "Q3",     color: C.accent },
     46: { label: "Q3",     color: C.accent },
     60: { label: "Max",    color: C.muted },
   };
@@ -395,7 +440,7 @@ function ScoreTable() {
           {/* Header */}
           <div style={{ background: C.accentDim, padding: "8px 12px", borderBottom: `1px solid ${C.border}` }}>
             <p style={{ fontSize: "11px", color: C.accent, margin: 0, fontWeight: "600" }}>
-              Highlighted positions: <strong>Q1 = position 15 (38)</strong> · <strong>Median = average of positions 30 and 31 (51)</strong> · <strong>Q3 = position 46 (62)</strong>
+              Highlighted positions: <strong>Q1 = average of positions 15 and 16 (38.5)</strong> · <strong>Median = average of positions 30 and 31 (51)</strong> · <strong>Q3 = average of positions 45 and 46 (61.5)</strong>
             </p>
           </div>
 
@@ -429,7 +474,8 @@ function ScoreTable() {
           <div style={{ padding: "10px 12px", background: "#f9fafb", borderTop: `1px solid ${C.border}` }}>
             <p style={{ fontSize: "12px", color: C.muted, margin: 0, lineHeight: 1.6 }}>
               With 60 values (even), the median = average of positions 30 and 31 = (50 + 52) ÷ 2 = 51.
-              Q1 = position 15 = 38. Q3 = position 46 = 62.
+              Q1 = average of positions 15 and 16 = (38 + 39) ÷ 2 = 38.5.
+              Q3 = average of positions 45 and 46 = (61 + 62) ÷ 2 = 61.5.
             </p>
           </div>
         </div>
@@ -593,8 +639,8 @@ export default function Learn() {
         <p style={{ fontSize: "13px", fontWeight: "700", color: C.text, margin: "0 0 10px" }}>What do we know so far?</p>
         {[
           { icon: "📌", jsx: <><GlossaryTerm term="Median">Median</GlossaryTerm> = 51 - the typical student scored about half marks</> },
-          { icon: "⚠️", jsx: <><GlossaryTerm term="Q1">Q1</GlossaryTerm> = 38 - a quarter of students scored below 38. These students need support</> },
-          { icon: "⚠️", jsx: <><GlossaryTerm term="IQR">IQR</GlossaryTerm> = 24 - the middle 50% are spread across 24 marks. That's inconsistent</> },
+          { icon: "⚠️", jsx: <><GlossaryTerm term="Q1">Q1</GlossaryTerm> = 38.5 - a quarter of students scored below 38.5. These students need support</> },
+          { icon: "⚠️", jsx: <><GlossaryTerm term="IQR">IQR</GlossaryTerm> = 23 - the middle 50% are spread across 23 marks. That shows the results are quite spread out</> },
           { icon: "📌", jsx: <><GlossaryTerm term="Maximum">Max</GlossaryTerm> = 91 - a few students are well ahead of everyone else</> },
         ].map(({ icon, text, jsx }, idx) => (
           <div key={idx} style={{ display: "flex", gap: "10px", padding: "8px 0", borderBottom: `1px solid ${C.border}`, alignItems: "flex-start" }}>
@@ -604,7 +650,7 @@ export default function Learn() {
         ))}
         <div style={{ marginTop: "12px", padding: "12px", background: "#fff8f0", border: "1px solid #d97706", borderRadius: "8px" }}>
           <p style={{ fontSize: "13px", color: "#92400e", margin: 0, lineHeight: 1.7 }}>
-            <strong>But here's the problem:</strong> the IQR of 24 tells you results are inconsistent - but why? Is one class dragging the results down? Are both classes equally mixed? You can't tell yet. You need to split the data by class.
+            <strong>But here's the problem:</strong> the IQR of 23 tells you results are quite spread out - but why? Is one class dragging the results down? Are both classes equally mixed? You can't tell yet. You need to split the data by class.
           </p>
         </div>
       </div>
@@ -641,8 +687,8 @@ export default function Learn() {
       <div style={{ background: "#f0fdf4", border: "1px solid #86efac", borderRadius: "12px", padding: "16px", marginBottom: "16px" }}>
         <p style={{ fontSize: "13px", fontWeight: "700", color: "#15803d", margin: "0 0 12px" }}>💡 Now we can answer the questions you were asking</p>
         {[
-          { q: "Is one class doing better overall?", a: "Yes. 11A has a median of 63, 11B has a median of 41. That's a 22-mark gap on the typical student. 11A is clearly stronger." },
-          { q: "Is one class more consistent?", a: "11A has an IQR of 13. 11B has an IQR of 28. 11A's students are moving together. In 11B, the middle 50% range from 27 to 55 - some students understand it, others are lost." },
+          { q: "Is one class doing better overall?", a: "Yes. 11A has a median of 61, 11B has a median of 38.5. That's a 22.5-mark gap on the typical student. 11A is clearly stronger." },
+          { q: "Is one class more consistent?", a: "11A has an IQR of 11. 11B has an IQR of 21. 11A's students are moving together. In 11B, the middle 50% range from 27 to 48 - some students understand it, others are lost." },
           { q: "Could tutoring be inflating 11A's results?", a: "Possibly - but 11A's small IQR works against that theory. If a few tutored students were pulling the median up, you'd expect a large IQR with a handful of students scoring much higher than everyone else. The tight box suggests the whole class is performing well, not just a few." },
           { q: "What about the bottom quarter in 11B?", a: "Q1 for 11B is just 27. A quarter of that class scored under 27 out of 100. Those students are concentrated in one class - and they need urgent support." },
         ].map(({ q, a }, i) => (
@@ -656,7 +702,7 @@ export default function Learn() {
       <div style={{ background: "#fffbeb", border: "1px solid #d97706", borderRadius: "10px", padding: "14px", marginBottom: "28px" }}>
         <p style={{ fontSize: "12px", fontWeight: "700", color: "#92400e", margin: "0 0 8px" }}>⭐ How to write this in an exam</p>
         <p style={{ fontSize: "13px", color: "#78350f", lineHeight: 1.7, margin: "0 0 8px" }}>
-          “Class 11A had a higher <GlossaryTerm term="Median">median</GlossaryTerm> (63) than Class 11B (41), so 11A performed better on average. Class 11A also had a smaller <GlossaryTerm term="IQR">IQR</GlossaryTerm> (13 compared to 28), so their results were more consistent.”
+          “Class 11A had a higher <GlossaryTerm term="Median">median</GlossaryTerm> (61) than Class 11B (38.5), so 11A performed better on average. Class 11A also had a smaller <GlossaryTerm term="IQR">IQR</GlossaryTerm> (11 compared to 21), so their results were more consistent.”
         </p>
         <p style={{ fontSize: "12px", color: "#92400e", margin: 0 }}>
           That structure - <strong>compare medians, draw a conclusion, compare IQRs, draw a conclusion</strong> - is exactly what mark schemes ask for.
