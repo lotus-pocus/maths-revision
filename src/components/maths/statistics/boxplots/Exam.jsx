@@ -2,6 +2,7 @@ import { useState } from "react";
 import { C, EXAM_QUESTIONS, COMPARE_QUESTIONS, READ_GRAPH_QUESTIONS, BAR_CHART_QUESTIONS } from "./data";
 import BoxPlotSVG from "./shared/BoxPlotSVG";
 import CumFreqGraph from "./shared/CumFreqGraph";
+import GlossaryTerm from "./GlossaryTerm";
 
 const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
@@ -57,7 +58,7 @@ function ExamPractice({ question, onBack }) {
             <BoxPlotSVG sets={[{ ...question.data, label: "Answer", color: C.accent }]} scaleMin={question.scaleMin} scaleMax={question.scaleMax} unit={question.unit} showLabels={false} />
           </div>
           <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: "10px", padding: "12px 14px", marginTop: "12px" }}>
-            <p style={{ fontSize: "12px", fontWeight: "700", color: "#15803d", textTransform: "uppercase", marginBottom: "6px" }}>IQR</p>
+            <p style={{ fontSize: "12px", fontWeight: "700", color: "#15803d", textTransform: "uppercase", marginBottom: "6px" }}><GlossaryTerm term="IQR">IQR</GlossaryTerm></p>
             <p style={{ fontSize: "14px", color: C.text, margin: 0 }}>
               IQR = Q3 − Q1 = {question.data.q3} − {question.data.q1} = <strong style={{ color: "#15803d" }}>{question.data.q3 - question.data.q1}</strong>
             </p>
@@ -251,7 +252,7 @@ function ReadTheGraph({ question, onBack }) {
             <BoxPlotSVG sets={[{ ...question.answer, label: "Answer", color: C.accent }]} scaleMin={question.scaleMin} scaleMax={question.scaleMax} unit={question.unit} showLabels={false} />
           </div>
           <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: "10px", padding: "12px 14px", marginBottom: "12px" }}>
-            <p style={{ fontSize: "12px", fontWeight: "700", color: "#15803d", textTransform: "uppercase", marginBottom: "6px" }}>IQR</p>
+            <p style={{ fontSize: "12px", fontWeight: "700", color: "#15803d", textTransform: "uppercase", marginBottom: "6px" }}><GlossaryTerm term="IQR">IQR</GlossaryTerm></p>
             <p style={{ fontSize: "14px", color: C.text, margin: 0 }}>
               IQR = Q3 − Q1 = {question.answer.q3} − {question.answer.q1} = <strong style={{ color: "#15803d" }}>{question.answer.q3 - question.answer.q1}</strong>
             </p>
@@ -454,7 +455,7 @@ function ReadBarChart({ question, onBack }) {
               scaleMin={question.scaleMin} scaleMax={question.scaleMax} unit={question.unit} showLabels={false} />
           </div>
           <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: "10px", padding: "12px 14px", marginBottom: "12px" }}>
-            <p style={{ fontSize: "12px", fontWeight: "700", color: "#15803d", textTransform: "uppercase", marginBottom: "6px" }}>IQR</p>
+            <p style={{ fontSize: "12px", fontWeight: "700", color: "#15803d", textTransform: "uppercase", marginBottom: "6px" }}><GlossaryTerm term="IQR">IQR</GlossaryTerm></p>
             <p style={{ fontSize: "14px", color: C.text, margin: 0 }}>
               IQR = Q3 − Q1 = {question.answer.q3} − {question.answer.q1} = <strong style={{ color: "#15803d" }}>{question.answer.q3 - question.answer.q1}</strong>
             </p>

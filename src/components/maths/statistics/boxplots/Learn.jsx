@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { C } from "./data";
+import GlossaryTerm from "./GlossaryTerm";
 
 // ── Data ──────────────────────────────────────────────────────────────────
 // 60 scores: 30 per class, consistent with box plot values
@@ -591,14 +592,14 @@ export default function Learn() {
       <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: "12px", padding: "14px 16px", marginBottom: "28px" }}>
         <p style={{ fontSize: "13px", fontWeight: "700", color: C.text, margin: "0 0 10px" }}>What do we know so far?</p>
         {[
-          { icon: "📌", text: "Median = 51 - the typical student scored about half marks" },
-          { icon: "⚠️", text: "Q1 = 38 - a quarter of students scored below 38. These students need support" },
-          { icon: "⚠️", text: "IQR = 24 - the middle 50% are spread across 24 marks. That's inconsistent" },
-          { icon: "📌", text: "Max = 91 - a few students are well ahead of everyone else" },
-        ].map(({ icon, text }) => (
-          <div key={text} style={{ display: "flex", gap: "10px", padding: "8px 0", borderBottom: `1px solid ${C.border}`, alignItems: "flex-start" }}>
+          { icon: "📌", jsx: <><GlossaryTerm term="Median">Median</GlossaryTerm> = 51 - the typical student scored about half marks</> },
+          { icon: "⚠️", jsx: <><GlossaryTerm term="Q1">Q1</GlossaryTerm> = 38 - a quarter of students scored below 38. These students need support</> },
+          { icon: "⚠️", jsx: <><GlossaryTerm term="IQR">IQR</GlossaryTerm> = 24 - the middle 50% are spread across 24 marks. That's inconsistent</> },
+          { icon: "📌", jsx: <><GlossaryTerm term="Maximum">Max</GlossaryTerm> = 91 - a few students are well ahead of everyone else</> },
+        ].map(({ icon, text, jsx }, idx) => (
+          <div key={idx} style={{ display: "flex", gap: "10px", padding: "8px 0", borderBottom: `1px solid ${C.border}`, alignItems: "flex-start" }}>
             <span style={{ fontSize: "15px", flexShrink: 0 }}>{icon}</span>
-            <p style={{ fontSize: "13px", color: C.text, margin: 0, lineHeight: 1.6 }}>{text}</p>
+            <p style={{ fontSize: "13px", color: C.text, margin: 0, lineHeight: 1.6 }}>{jsx || text}</p>
           </div>
         ))}
         <div style={{ marginTop: "12px", padding: "12px", background: "#fff8f0", border: "1px solid #d97706", borderRadius: "8px" }}>
@@ -655,7 +656,7 @@ export default function Learn() {
       <div style={{ background: "#fffbeb", border: "1px solid #d97706", borderRadius: "10px", padding: "14px", marginBottom: "28px" }}>
         <p style={{ fontSize: "12px", fontWeight: "700", color: "#92400e", margin: "0 0 8px" }}>⭐ How to write this in an exam</p>
         <p style={{ fontSize: "13px", color: "#78350f", lineHeight: 1.7, margin: "0 0 8px" }}>
-          "Class 11A had a higher median (63) than Class 11B (41), so 11A performed better on average. Class 11A also had a smaller IQR (13 compared to 28), so their results were more consistent."
+          “Class 11A had a higher <GlossaryTerm term="Median">median</GlossaryTerm> (63) than Class 11B (41), so 11A performed better on average. Class 11A also had a smaller <GlossaryTerm term="IQR">IQR</GlossaryTerm> (13 compared to 28), so their results were more consistent.”
         </p>
         <p style={{ fontSize: "12px", color: "#92400e", margin: 0 }}>
           That structure - <strong>compare medians, draw a conclusion, compare IQRs, draw a conclusion</strong> - is exactly what mark schemes ask for.
@@ -692,7 +693,7 @@ export default function Learn() {
       <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: "10px", padding: "14px", marginBottom: "28px" }}>
         <p style={{ fontSize: "13px", fontWeight: "700", color: C.text, margin: "0 0 6px" }}>The one rule to remember:</p>
         <p style={{ fontSize: "14px", color: C.accent, fontWeight: "700", lineHeight: 1.6, margin: 0 }}>
-          Small IQR = consistent. Large IQR = something is creating inequality - find out why.
+          Small <GlossaryTerm term="IQR">IQR</GlossaryTerm> = consistent. Large <GlossaryTerm term="IQR">IQR</GlossaryTerm> = something is creating inequality - find out why.
         </p>
       </div>
 
