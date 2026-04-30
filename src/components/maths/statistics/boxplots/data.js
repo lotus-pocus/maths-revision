@@ -119,7 +119,7 @@ export const HOSPITAL_SCENARIOS = [
 export const EXAM_QUESTIONS = [
   {
     id: "q1",
-    question: "The table shows information about the heights (cm) of some plants.",
+    question: "The table shows information about the heights (cm) of some plants. Draw a box plot to represent this information.",
     data: { min: 11, q1: 28, median: 37, q3: 42, max: 51 },
     scaleMin: 0, scaleMax: 60, unit: "Height (cm)",
   },

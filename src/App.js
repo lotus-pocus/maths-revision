@@ -1,15 +1,19 @@
-import statistics from "./data/statistics";
-import MathsTopicsView from "./components/MathsTopicsView";
 import BoxPlotVisualiser from "./components/maths/statistics/boxplots";
+import { UserProvider } from "./context/UserContext";
+import { ProgressProvider } from "./context/ProgressContext";
 import "./App.css";
 
 function App() {
   return (
-    <div className="app">
-      <div className="main-content">
-        <BoxPlotVisualiser />
-      </div>
-    </div>
+    <UserProvider>
+      <ProgressProvider>
+        <div className="app">
+          <div className="main-content">
+            <BoxPlotVisualiser />
+          </div>
+        </div>
+      </ProgressProvider>
+    </UserProvider>
   );
 }
 

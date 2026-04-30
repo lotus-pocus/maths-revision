@@ -3,7 +3,10 @@ import { C, EXAM_QUESTIONS, COMPARE_QUESTIONS, READ_GRAPH_QUESTIONS, BAR_CHART_Q
 import BoxPlotSVG from "./shared/BoxPlotSVG";
 import CumFreqGraph from "./shared/CumFreqGraph";
 import GlossaryTerm from "./GlossaryTerm";
+import ScoreDot from "./shared/ScoreDot";
+import { useProgress } from "../../../../context/ProgressContext";
 
+const TOPIC = "maths/statistics/boxplots";
 const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
 function BottomBack({ onBack, label = "← Back" }) {
@@ -15,9 +18,45 @@ function BottomBack({ onBack, label = "← Back" }) {
   );
 }
 
+// ── Self-mark buttons ─────────────────────────────────────────────────────
+function SelfMark({ questionId, onMark }) {
+  const { getScore } = useProgress();
+  const score = getScore(TOPIC, questionId);
+  return (
+    <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: "10px", padding: "12px 14px", marginTop: "12px" }}>
+      <p style={{ fontSize: "12px", fontWeight: "700", color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em", margin: "0 0 10px" }}>
+        How did you do?
+      </p>
+      <div style={{ display: "flex", gap: "8px" }}>
+        {[
+          { score: "correct",   label: "✓ Got it",        bg: "#059669", active: score === "correct"   },
+          { score: "struggled", label: "✗ Need practice", bg: "#f59e0b", active: score === "struggled" },
+        ].map(({ score: s, label, bg, active }) => (
+          <button key={s} onClick={() => onMark(s)}
+            style={{ flex: 1, padding: "10px 8px", borderRadius: "8px", border: `2px solid ${active ? bg : C.border}`,
+              background: active ? bg + "20" : "#fff", cursor: "pointer",
+              fontSize: "13px", fontWeight: "700", color: active ? bg : C.muted,
+              transition: "all 0.15s" }}>
+            {label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ── Draw a box plot ───────────────────────────────────────────────────────
 function ExamPractice({ question, onBack }) {
   const [revealed, setRevealed] = useState(false);
+  const { setScore } = useProgress();
+
+  const handleReveal = () => {
+    setRevealed(true);
+    // Mark as struggled when they reveal — they can upgrade to correct via self-mark
+    setScore(TOPIC, question.id, "struggled");
+  };
+
+  const handleMark = (score) => setScore(TOPIC, question.id, score);
   return (
     <div>
       <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", color: C.muted, fontSize: "13px", padding: "0 0 16px", display: "flex", alignItems: "center", gap: "4px" }}>← Back</button>
@@ -41,7 +80,7 @@ function ExamPractice({ question, onBack }) {
         )}
       </div>
       <p style={{ fontSize: "13px", color: C.muted, marginBottom: "12px", fontStyle: "italic" }}>Try sketching the box plot yourself first, then reveal the answer below.</p>
-      <button onClick={() => setRevealed(!revealed)} style={{ width: "100%", padding: "12px", background: revealed ? C.accentDim : C.accent, color: revealed ? C.accent : C.bg, border: `1px solid ${C.accent}`, borderRadius: "10px", fontSize: "14px", fontWeight: "700", cursor: "pointer", marginBottom: "16px" }}>
+      <button onClick={handleReveal} style={{ width: "100%", padding: "12px", background: revealed ? C.accentDim : C.accent, color: revealed ? C.accent : C.bg, border: `1px solid ${C.accent}`, borderRadius: "10px", fontSize: "14px", fontWeight: "700", cursor: "pointer", marginBottom: "16px" }}>
         {revealed ? "Hide answer" : "Reveal answer & box plot"}
       </button>
       {revealed && (
@@ -72,6 +111,7 @@ function ExamPractice({ question, onBack }) {
               IQR = Q3 − Q1 = {question.data.q3} − {question.data.q1} = <strong style={{ color: "#15803d" }}>{question.data.q3 - question.data.q1}</strong>
             </p>
           </div>
+          <SelfMark questionId={question.id} onMark={handleMark} />
         </div>
       )}
       <BottomBack onBack={onBack} />
@@ -84,8 +124,14 @@ function CompareQuestion({ question, onBack }) {
   const [showAnswer, setShowAnswer] = useState(false);
   const [comparison, setComparison] = useState("");
   const [checked, setChecked]       = useState(false);
+  const { setScore } = useProgress();
   const a = question.yours; const b = question.theirs;
   const iqrA = a.q3 - a.q1; const iqrB = b.q3 - b.q1;
+
+  const handleReveal = () => {
+    setShowAnswer(true);
+    setScore(TOPIC, question.id, "struggled");
+  };
 
   return (
     <div>
@@ -118,7 +164,7 @@ function CompareQuestion({ question, onBack }) {
       <p style={{ fontSize: "12px", color: C.muted, marginBottom: "16px", fontStyle: "italic", textAlign: "center" }}>
         ↑ Sketch {question.yoursLabel} on paper on the same scale, then reveal below.
       </p>
-      <button onClick={() => setShowAnswer(!showAnswer)} style={{ width: "100%", padding: "12px", background: showAnswer ? C.accentDim : C.accent, color: showAnswer ? C.accent : C.bg, border: `1px solid ${C.accent}`, borderRadius: "10px", fontSize: "14px", fontWeight: "700", cursor: "pointer", marginBottom: "16px" }}>
+      <button onClick={handleReveal} style={{ width: "100%", padding: "12px", background: showAnswer ? C.accentDim : C.accent, color: showAnswer ? C.accent : C.bg, border: `1px solid ${C.accent}`, borderRadius: "10px", fontSize: "14px", fontWeight: "700", cursor: "pointer", marginBottom: "16px" }}>
         {showAnswer ? "Hide answer" : "Reveal both box plots"}
       </button>
       {showAnswer && (
@@ -168,6 +214,7 @@ function CompareQuestion({ question, onBack }) {
           )}
         </div>
       )}
+      {showAnswer && <SelfMark questionId={question.id} onMark={(s) => setScore(TOPIC, question.id, s)} />}
       <BottomBack onBack={onBack} />
     </div>
   );
@@ -176,6 +223,12 @@ function CompareQuestion({ question, onBack }) {
 // ── Read the graph ────────────────────────────────────────────────────────
 function ReadTheGraph({ question, onBack }) {
   const [showBoxPlot, setShowBoxPlot] = useState(false);
+  const { setScore } = useProgress();
+
+  const handleReveal = () => {
+    setShowBoxPlot(true);
+    setScore(TOPIC, question.id, "struggled");
+  };
 
   return (
     <div>
@@ -252,7 +305,7 @@ function ReadTheGraph({ question, onBack }) {
         </p>
       </div>
 
-      <button onClick={() => setShowBoxPlot(!showBoxPlot)} style={{ width: "100%", padding: "12px", background: showBoxPlot ? "#a78bfa30" : C.purple, color: showBoxPlot ? C.purple : C.bg, border: `1px solid ${C.purple}`, borderRadius: "10px", fontSize: "14px", fontWeight: "700", cursor: "pointer", marginBottom: showBoxPlot ? "16px" : "0" }}>
+      <button onClick={handleReveal} style={{ width: "100%", padding: "12px", background: showBoxPlot ? "#a78bfa30" : C.purple, color: showBoxPlot ? C.purple : C.bg, border: `1px solid ${C.purple}`, borderRadius: "10px", fontSize: "14px", fontWeight: "700", cursor: "pointer", marginBottom: showBoxPlot ? "16px" : "0" }}>
         {showBoxPlot ? "Hide box plot" : "Reveal box plot answer"}
       </button>
 
@@ -271,6 +324,7 @@ function ReadTheGraph({ question, onBack }) {
           <div style={{ background: "#fffbeb20", border: "1px solid #f59e0b40", borderRadius: "10px", padding: "12px 14px" }}>
             <p style={{ fontSize: "12px", color: C.amber, margin: 0, lineHeight: 1.6 }}>⭐ <strong>Exam tip:</strong> {question.examTip}</p>
           </div>
+          <SelfMark questionId={question.id} onMark={(s) => setScore(TOPIC, question.id, s)} />
         </div>
       )}
       <BottomBack onBack={onBack} />
@@ -330,6 +384,12 @@ function BarChartSVG({ rows, unit }) {
 function ReadBarChart({ question, onBack }) {
   const [showWorking, setShowWorking] = useState(false);
   const [showBoxPlot, setShowBoxPlot] = useState(false);
+  const { setScore } = useProgress();
+
+  const handleReveal = () => {
+    setShowBoxPlot(true);
+    setScore(TOPIC, question.id, "struggled");
+  };
 
   return (
     <div>
@@ -393,6 +453,20 @@ function ReadBarChart({ question, onBack }) {
         </p>
       </div>
 
+      {/* Grouped data min/max note */}
+      <div style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: "12px", padding: "12px 14px", marginBottom: "12px" }}>
+        <p style={{ fontSize: "12px", fontWeight: "700", color: "#1d4ed8", margin: "0 0 6px" }}>📌 Min and Max with grouped data</p>
+        <p style={{ fontSize: "12px", color: "#1e3a8a", margin: "0 0 6px", lineHeight: 1.6 }}>
+          With a frequency table, you don't know the exact values — only which interval they fall in.
+        </p>
+        <p style={{ fontSize: "12px", color: "#1e3a8a", margin: "0 0 4px", lineHeight: 1.6 }}>
+          <strong>Min</strong> = use the <em>lower boundary</em> of the first interval that has data.
+        </p>
+        <p style={{ fontSize: "12px", color: "#1e3a8a", margin: 0, lineHeight: 1.6 }}>
+          <strong>Max</strong> = use the <em>upper boundary</em> of the last interval that has data.
+        </p>
+      </div>
+
       {/* Key positions helper */}
       <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: "12px", padding: "12px 14px", marginBottom: "16px" }}>
         <p style={{ fontSize: "12px", fontWeight: "700", color: C.text, margin: "0 0 8px" }}>Key positions to find</p>
@@ -438,7 +512,7 @@ function ReadBarChart({ question, onBack }) {
       )}
 
       {/* Five-number summary + reveal box plot */}
-      <button onClick={() => setShowBoxPlot(!showBoxPlot)}
+      <button onClick={handleReveal}
         style={{ width: "100%", padding: "12px", background: showBoxPlot ? C.accentDim : C.accent,
           color: showBoxPlot ? C.accent : "#fff", border: `1px solid ${C.accent}`,
           borderRadius: "10px", fontSize: "14px", fontWeight: "700", cursor: "pointer", marginBottom: showBoxPlot ? "16px" : "0" }}>
@@ -477,6 +551,7 @@ function ReadBarChart({ question, onBack }) {
               ⭐ <strong>Exam tip:</strong> {question.examTip}
             </p>
           </div>
+          <SelfMark questionId={question.id} onMark={(s) => setScore(TOPIC, question.id, s)} />
         </div>
       )}
       <BottomBack onBack={onBack} />
@@ -490,6 +565,7 @@ export default function Exam() {
   const [compareIdx,    setCompareIdx]    = useState(null);
   const [graphIdx,      setGraphIdx]      = useState(null);
   const [barChartIdx,   setBarChartIdx]   = useState(null);
+  const { getScore } = useProgress();
 
   if (examIdx !== null)
     return <ExamPractice  question={EXAM_QUESTIONS[examIdx]}              onBack={() => { setExamIdx(null); scrollToTop(); }} />;
@@ -511,7 +587,10 @@ export default function Exam() {
         {EXAM_QUESTIONS.map((q, i) => (
           <button key={q.id} onClick={() => { setExamIdx(i); scrollToTop(); }} style={{ padding: "14px 16px", background: C.card, border: `1px solid ${C.border}`, borderRadius: "12px", cursor: "pointer", textAlign: "left", color: C.text, fontSize: "13px", lineHeight: 1.6, display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px" }}>
             <span style={{ flex: 1 }}><span style={{ fontWeight: "700", color: C.accent }}>Q{i + 1} - </span>{q.question}</span>
-            <span style={{ color: C.muted, fontSize: "18px", flexShrink: 0, marginTop: "2px" }}>→</span>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0, marginTop: "2px" }}>
+              <ScoreDot score={getScore(TOPIC, q.id)} />
+              <span style={{ color: C.muted, fontSize: "18px" }}>→</span>
+            </div>
           </button>
         ))}
       </div>
@@ -521,7 +600,10 @@ export default function Exam() {
         {COMPARE_QUESTIONS.map((q, i) => (
           <button key={q.id} onClick={() => { setCompareIdx(i); scrollToTop(); }} style={{ padding: "14px 16px", background: C.card, border: `1px solid ${C.border}`, borderRadius: "12px", cursor: "pointer", textAlign: "left", color: C.text, fontSize: "13px", lineHeight: 1.6, display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px" }}>
             <span style={{ flex: 1 }}><span style={{ fontWeight: "700", color: C.amber }}>{q.label} - </span>{q.question}</span>
-            <span style={{ color: C.muted, fontSize: "18px", flexShrink: 0, marginTop: "2px" }}>→</span>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0, marginTop: "2px" }}>
+              <ScoreDot score={getScore(TOPIC, q.id)} />
+              <span style={{ color: C.muted, fontSize: "18px" }}>→</span>
+            </div>
           </button>
         ))}
       </div>
@@ -536,7 +618,10 @@ export default function Exam() {
         {READ_GRAPH_QUESTIONS.map((q, i) => (
           <button key={q.id} onClick={() => { setGraphIdx(i); scrollToTop(); }} style={{ padding: "14px 16px", background: C.card, border: `1px solid ${C.border}`, borderRadius: "12px", cursor: "pointer", textAlign: "left", color: C.text, fontSize: "13px", lineHeight: 1.6, display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px" }}>
             <span style={{ flex: 1 }}><span style={{ fontWeight: "700", color: C.purple }}>{q.label} - </span>{q.question}</span>
-            <span style={{ color: C.muted, fontSize: "18px", flexShrink: 0, marginTop: "2px" }}>→</span>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0, marginTop: "2px" }}>
+              <ScoreDot score={getScore(TOPIC, q.id)} />
+              <span style={{ color: C.muted, fontSize: "18px" }}>→</span>
+            </div>
           </button>
         ))}
       </div>
@@ -557,7 +642,10 @@ export default function Exam() {
         {BAR_CHART_QUESTIONS.map((q, i) => (
           <button key={q.id} onClick={() => { setBarChartIdx(i); scrollToTop(); }} style={{ padding: "14px 16px", background: C.card, border: `1px solid ${C.border}`, borderRadius: "12px", cursor: "pointer", textAlign: "left", color: C.text, fontSize: "13px", lineHeight: 1.6, display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px" }}>
             <span style={{ flex: 1 }}><span style={{ fontWeight: "700", color: "#d97706" }}>{q.label} - </span>{q.question}</span>
-            <span style={{ color: C.muted, fontSize: "18px", flexShrink: 0, marginTop: "2px" }}>→</span>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0, marginTop: "2px" }}>
+              <ScoreDot score={getScore(TOPIC, q.id)} />
+              <span style={{ color: C.muted, fontSize: "18px" }}>→</span>
+            </div>
           </button>
         ))}
       </div>
