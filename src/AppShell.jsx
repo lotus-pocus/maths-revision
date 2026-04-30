@@ -42,7 +42,46 @@ function UserAvatar() {
   );
 }
 
-// ── Glossary tab ──────────────────────────────────────────────────────────
+// ── Filter pill bar ───────────────────────────────────────────────────────
+const FILTERS = [
+  { id: "all",         label: "All Topics",       icon: "📚" },
+  { id: "non-calc",    label: "Non-Calculator",   icon: "✏️"  },
+  { id: "calc",        label: "Calculator",       icon: "🔢" },
+  { id: "foundation",  label: "Foundation Tier",  icon: "🟢" },
+  { id: "higher",      label: "Higher Tier",      icon: "⭐" },
+  { id: "paper1",      label: "Paper 1",          icon: "1️⃣"  },
+  { id: "paper2",      label: "Paper 2 & 3",      icon: "2️⃣"  },
+];
+
+function FilterPills({ active, onChange }) {
+  return (
+    <div style={{ display: "flex", gap: "6px", flexWrap: "wrap",
+      paddingBottom: "4px", marginBottom: "16px" }}>
+      {FILTERS.map(f => (
+        <button key={f.id} onClick={() => onChange(f.id)}
+          style={{ padding: "6px 14px", borderRadius: "99px", border: "none", cursor: "pointer",
+            fontSize: "12px", fontWeight: active === f.id ? "700" : "500",
+            background: active === f.id ? "#1a1a2e" : "#fff",
+            color: active === f.id ? "#fff" : "#6b7280",
+            boxShadow: active === f.id ? "none" : "0 1px 3px rgba(0,0,0,0.08)",
+            whiteSpace: "nowrap", flexShrink: 0, transition: "all 0.15s" }}>
+          {f.icon} {f.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function applyFilter(topics, filter) {
+  if (filter === "all")      return topics;
+  if (filter === "non-calc")   return topics.filter(t => t.calculator === "non-calc" || t.calculator === "both");
+  if (filter === "calc")       return topics.filter(t => t.calculator === "calc"     || t.calculator === "both");
+  if (filter === "foundation") return topics.filter(t => t.tier === "foundation"     || t.tier === "both");
+  if (filter === "higher")     return topics.filter(t => t.tier === "higher"         || t.tier === "both");
+  if (filter === "paper1")   return topics.filter(t => t.papers?.includes(1));
+  if (filter === "paper2")   return topics.filter(t => t.papers?.includes(2));
+  return topics;
+}
 function GlossaryTab() {
   const allTerms = statistics
     .filter(t => t.terms)
@@ -161,22 +200,79 @@ function SearchTab() {
 function AboutTab() {
   return (
     <div style={{ paddingBottom: "2rem" }}>
-      <div style={{ background: "#ecfdf5", border: "1px solid #059669", borderRadius: "12px", padding: "16px 18px", marginBottom: "16px" }}>
-        <p style={{ fontSize: "15px", fontWeight: "800", color: "#065f46", margin: "0 0 8px" }}>GCSE Maths Revision</p>
-        <p style={{ fontSize: "13px", color: "#065f46", margin: 0, lineHeight: 1.7 }}>
-          An interactive revision app for Edexcel GCSE Mathematics. Built to help students understand — not just memorise — the key topics, with real-world context, worked examples, and exam practice.
+
+      {/* Origin story */}
+      <div style={{ background: "#ecfdf5", border: "1px solid #059669", borderRadius: "12px", padding: "16px 18px", marginBottom: "14px" }}>
+        <p style={{ fontSize: "15px", fontWeight: "800", color: "#065f46", margin: "0 0 10px" }}>
+          Why does this exist? 📖
+        </p>
+        <p style={{ fontSize: "13px", color: "#065f46", margin: "0 0 10px", lineHeight: 1.8 }}>
+          My daughter came home from school with a practice paper she'd printed out in the library. She was stuck on a box plot question. She asked her teacher, who scribbled something barely legible on the paper and moved on.
+        </p>
+        <p style={{ fontSize: "13px", color: "#065f46", margin: "0 0 10px", lineHeight: 1.8 }}>
+          That was the moment I decided to build something better. Not just an answer, but something that actually explains <em>why</em>, shows real-world context, and lets you practise until it clicks.
+        </p>
+        <p style={{ fontSize: "13px", color: "#065f46", margin: 0, lineHeight: 1.8 }}>
+          It started with box plots. I'm building it out topic by topic to cover the full Edexcel GCSE Maths specification. It's a work in progress, but hopefully already more useful than a scribble on a page. 😅
         </p>
       </div>
-      {[
-        { heading: "How to use this app", body: "Start with the Topics tab — find a topic you're revising and open the interactive lesson. Work through Learn first to understand the concept, then test yourself in Exam. Use the Glossary to look up any terms you're unsure about." },
-        { heading: "Progress tracking", body: "Your progress is saved on this device. Tap your initial in the top corner to switch between users — useful if multiple students share a device. Exam questions track whether you got them right or needed help." },
-        { heading: "Exam board", body: "All content is aligned to the Edexcel GCSE Mathematics specification (1MA1), covering both Foundation and Higher tier topics." },
-      ].map(({ heading, body }) => (
-        <div key={heading} style={{ background: "#fff", border: "0.5px solid #e5e7eb", borderRadius: "12px", padding: "14px 16px", marginBottom: "10px" }}>
-          <p style={{ fontSize: "13px", fontWeight: "700", color: "#1a1a2e", margin: "0 0 6px" }}>{heading}</p>
-          <p style={{ fontSize: "13px", color: "#6b7280", margin: 0, lineHeight: 1.7 }}>{body}</p>
+
+      {/* Open invitation */}
+      <div style={{ background: "#fff", border: "0.5px solid #e5e7eb", borderRadius: "12px", padding: "14px 16px", marginBottom: "14px" }}>
+        <p style={{ fontSize: "13px", color: "#374151", margin: 0, lineHeight: 1.8 }}>
+          If you've found your way here and it's useful for your own revision, that's brilliant, please help yourself. Good luck in your exams. 🌟
+        </p>
+      </div>
+
+      {/* How to use */}
+      <div style={{ background: "#fff", border: "0.5px solid #e5e7eb", borderRadius: "12px", padding: "14px 16px", marginBottom: "14px" }}>
+        <p style={{ fontSize: "13px", fontWeight: "700", color: "#1a1a2e", margin: "0 0 8px" }}>📱 How to use this app</p>
+        <p style={{ fontSize: "13px", color: "#6b7280", margin: 0, lineHeight: 1.8 }}>
+          Pick a topic from the Topics tab and open the interactive lesson. Work through <strong>Learn</strong> first to understand the concept, then test yourself in <strong>Exam</strong>. Use the <strong>Glossary</strong> to look up terms. Your progress is saved on this device, tap your initial in the corner to switch between users if you're sharing with someone else.
+        </p>
+      </div>
+
+      {/* Exam board */}
+      <div style={{ background: "#fff", border: "0.5px solid #e5e7eb", borderRadius: "12px", padding: "14px 16px", marginBottom: "14px" }}>
+        <p style={{ fontSize: "13px", fontWeight: "700", color: "#1a1a2e", margin: "0 0 8px" }}>📋 Exam board</p>
+        <p style={{ fontSize: "13px", color: "#6b7280", margin: 0, lineHeight: 1.8 }}>
+          All content is aligned to the <strong>Edexcel GCSE Mathematics specification (1MA1)</strong>, covering both Foundation and Higher tier. Questions are written in Edexcel style, the same structure and wording you'll see in the real exam.
+        </p>
+      </div>
+
+      {/* Who made this */}
+      <div style={{ background: "#fff", border: "0.5px solid #e5e7eb", borderRadius: "12px", padding: "14px 16px", marginBottom: "14px" }}>
+        <p style={{ fontSize: "13px", fontWeight: "700", color: "#1a1a2e", margin: "0 0 8px" }}>👨‍💻 Who made this?</p>
+        <p style={{ fontSize: "13px", color: "#6b7280", margin: "0 0 10px", lineHeight: 1.8 }}>
+          I work at <a href="https://www.gamoola.com" target="_blank" rel="noopener noreferrer" style={{ color: "#059669", fontWeight: "600" }}>Gamoola</a> - a small creative studio building interactive digital experiences for universities and businesses. We built things like a{" "}
+          <a href="https://www.gamoola.com/projects/vr-bioscience/" target="_blank" rel="noopener noreferrer" style={{ color: "#059669", fontWeight: "600" }}>VR Bioscience app for Coventry University</a>.
+          This maths app is a personal project, not a commercial one.
+        </p>
+        <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
+          <a href="https://gamoola.com" target="_blank" rel="noopener noreferrer"
+            style={{ fontSize: "13px", color: "#059669", fontWeight: "600", textDecoration: "none" }}>
+            🌐 gamoola.com
+          </a>
+          <a href="mailto:lotus@gamoola.com"
+            style={{ fontSize: "13px", color: "#059669", fontWeight: "600", textDecoration: "none" }}>
+            📧 lotus@gamoola.com
+          </a>
         </div>
-      ))}
+      </div>
+
+      {/* Disclaimer */}
+      <div style={{ background: "#f9fafb", border: "0.5px solid #e5e7eb", borderRadius: "12px", padding: "14px 16px", marginBottom: "14px" }}>
+        <p style={{ fontSize: "13px", fontWeight: "700", color: "#1a1a2e", margin: "0 0 8px" }}>📋 Disclaimer</p>
+        <p style={{ fontSize: "12px", color: "#9ca3af", margin: 0, lineHeight: 1.8 }}>
+          This app was created for personal, non-commercial use to support one student's GCSE revision. It is not affiliated with or endorsed by Edexcel or Pearson. If you are the owner of any content featured here and would like it removed, please get in touch at{" "}
+          <a href="mailto:lotus@gamoola.com" style={{ color: "#6b7280" }}>lotus@gamoola.com</a>.
+        </p>
+      </div>
+
+      <p style={{ fontSize: "13px", color: "#9ca3af", textAlign: "center", marginTop: "8px" }}>
+        Built with ❤️ for Scarlett — good luck in your exams! 🌟
+      </p>
+
     </div>
   );
 }
@@ -214,7 +310,8 @@ function ReferencesTab() {
 // ── Main AppShell ─────────────────────────────────────────────────────────
 export default function AppShell() {
   const [activeTab, setActiveTab] = useState("topics");
-  const [activeTopic, setActiveTopic] = useState(null); // topic interactive being viewed
+  const [activeTopic, setActiveTopic] = useState(null);
+  const [activeFilter, setActiveFilter] = useState("all");
   const { activeUser } = useUser();
   const { getUnderstoodTopics } = useProgress();
 
@@ -292,7 +389,10 @@ export default function AppShell() {
 
       {/* ── Content ── */}
       <div style={{ flex: 1, padding: "20px 16px", background: "#fffde7" }}>
-        {activeTab === "topics"     && <MathsTopicsView allTopics={statistics} onLaunchTopic={handleLaunchTopic} />}
+        {activeTab === "topics"     && <>
+          <FilterPills active={activeFilter} onChange={setActiveFilter} />
+          <MathsTopicsView allTopics={applyFilter(statistics, activeFilter)} onLaunchTopic={handleLaunchTopic} />
+        </>}
         {activeTab === "glossary"   && <GlossaryTab />}
         {activeTab === "search"     && <SearchTab />}
         {activeTab === "about"      && <AboutTab />}

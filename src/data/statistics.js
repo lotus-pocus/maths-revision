@@ -5,6 +5,8 @@ const statistics = [
     category: "statistics",
     strand: "Statistics",
     tier: "both", // Foundation and Higher
+    calculator: "both", // appears on all three papers
+    papers: [1,2,3],
     realWorldHook:
       "Hospitals use box plots to compare patient waiting times across different wards — not just the average wait, but whether the times are consistent or all over the place. A business uses them to compare salaries and spot whether pay is fair across a team. Scientists use them to compare results from two experiments. They answer two questions at once: what is typical, and how spread out is everything? Once you can read one, you'll spot them everywhere.",
     whyItMatters:
@@ -129,6 +131,8 @@ const statistics = [
     category: "statistics",
     strand: "Statistics",
     tier: "both",
+    calculator: "both", // appears on all three papers
+    papers: [1,2,3],
     realWorldHook:
       "A shoe company wants to know what percentage of customers need size 8 or smaller, so they know how many to stock. A school wants to know how many students scored below the pass mark. Cumulative frequency answers 'how many are below this value?' — and that's an incredibly useful question in the real world.",
     whyItMatters:
@@ -218,6 +222,8 @@ const statistics = [
     category: "statistics",
     strand: "Statistics",
     tier: "higher", // Higher only
+    calculator: "both", // appears on all three papers
+    papers: [1,2,3],
     realWorldHook:
       "Speed cameras record how fast every car passes. Traffic engineers use histograms to show the distribution of speeds — not just how many cars sped, but how badly they sped. A histogram shows the SHAPE of data, not just the total. Insurance companies, scientists, and engineers use them constantly.",
     whyItMatters:
@@ -301,6 +307,8 @@ const statistics = [
     category: "statistics",
     strand: "Statistics",
     tier: "both",
+    calculator: "both", // appears on all three papers
+    papers: [1,2,3],
     realWorldHook:
       "Scientists used scatter graphs to discover the link between smoking and lung cancer. Estate agents use them to show the relationship between house size and price. Sports analysts use them to explore whether training hours relate to performance. Whenever you want to ask 'does more of X mean more (or less) of Y?', a scatter graph is the tool.",
     whyItMatters:
@@ -361,6 +369,8 @@ const statistics = [
     category: "statistics",
     strand: "Statistics",
     tier: "both",
+    calculator: "non-calc", // more common on Paper 1 (non-calculator), but can appear on any
+    papers: [1],
     realWorldHook:
       "When the news says 'the average UK salary is £35,000', they're using the mean. But if a few billionaires are included, that figure is misleading — the median would tell a more honest story. Choosing the RIGHT average matters enormously in business, politics, and science.",
     whyItMatters:
