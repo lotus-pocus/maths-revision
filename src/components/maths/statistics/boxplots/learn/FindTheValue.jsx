@@ -254,14 +254,16 @@ export default function FindTheValue({ questionIndex = null }) {
   };
 
   const handleFollowUpAnswer = (passed) => {
-    const newResults = [...followUpResults, passed];
-    setFollowUpResults(newResults);
-    const remaining = followUpQueue.slice(newResults.length);
-    if (remaining.length === 0) {
-      setPhase("done");
-      setShowExplanation(true);
-    }
-    // else stay in evenFollowUp — next item in queue renders automatically
+    setFollowUpResults(prev => {
+      const newResults = [...prev, passed];
+      if (newResults.length === followUpQueue.length) {
+        setTimeout(() => {
+          setPhase("done");
+          setShowExplanation(true);
+        }, 400);
+      }
+      return newResults;
+    });
   };
 
   const currentFollowUp = phase === "evenFollowUp"

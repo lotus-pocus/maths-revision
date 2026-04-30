@@ -234,6 +234,7 @@ export default function InterpretThis({ scenarioIndex = null }) {
   const [completedSentences, setCompletedSentences] = useState(new Set());
   const [correctSentences, setCorrectSentences]     = useState(new Set());
   const [showInsight, setShowInsight] = useState(false);
+  const topRef = React.useRef(null);
 
   const scenario = SCENARIOS[sIdx];
   const totalSentences = scenario.sentences.length;
@@ -245,15 +246,15 @@ export default function InterpretThis({ scenarioIndex = null }) {
     setCompletedSentences(new Set());
     setCorrectSentences(new Set());
     setShowInsight(false);
+    // Scroll the modal content back to top
+    setTimeout(() => {
+      if (topRef.current) {
+        topRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }, 50);
   };
 
   const handleSentenceComplete = (sentenceId, wasCorrect) => {
-    setCompletedSentences(prev => {
-      const next = new Set(prev);
-      next.add(sentenceId);
-      if (next.size === totalSentences) setShowInsight(true);
-      return next;
-    });
     if (wasCorrect) {
       setCorrectSentences(prev => {
         const next = new Set(prev);
@@ -261,10 +262,18 @@ export default function InterpretThis({ scenarioIndex = null }) {
         return next;
       });
     }
+    setCompletedSentences(prev => {
+      const next = new Set(prev);
+      next.add(sentenceId);
+      if (next.size === totalSentences) {
+        setTimeout(() => setShowInsight(true), 400);
+      }
+      return next;
+    });
   };
 
   return (
-    <div>
+    <div ref={topRef}>
       {/* Scenario counter + dots */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px" }}>
         <span style={{ fontSize: "11px", fontWeight: "700", color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em" }}>
