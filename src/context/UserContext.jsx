@@ -44,8 +44,18 @@ export function UserProvider({ children }) {
   const addUser = (displayName) => {
     const name = displayName.trim();
     if (!name) return;
+
+    // Count how many existing users share this base name (case-insensitive)
+    // Strip any trailing number from existing names before comparing
+    const sameNameCount = store.users.filter(
+      u => u.displayName.replace(/ \d+$/, "").toLowerCase() === name.toLowerCase()
+    ).length;
+
+    // If someone with this name already exists, append a number
+    const uniqueDisplayName = sameNameCount > 0 ? `${name} ${sameNameCount + 1}` : name;
+
     const id = `${name.toLowerCase().replace(/\s+/g, "_")}_${generateId()}`;
-    const newUser = { id, displayName: name };
+    const newUser = { id, displayName: uniqueDisplayName };
     setStore(prev => {
       const next = { users: [...prev.users, newUser], activeUserId: id };
       return next;

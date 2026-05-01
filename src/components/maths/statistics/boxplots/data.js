@@ -234,9 +234,10 @@ export const BUILD_QUESTIONS = [
     answer: { min: 142, q1: 151, median: 158, q3: 167, max: 180 },
     scaleMin: 130, scaleMax: 190, unit: "Height (cm)",
     hint: "9 values - the median is the 5th. Q1 is the 3rd, Q3 is the 7th.",
+    distractors: [145, 150, 153, 160, 165, 170, 175],
     cumFreq: {
       totalFreq: 9,
-      points: [[130,0],[142,0],[148,1],[151,2],[155,3],[158,4],[163,5],[167,7],[171,8],[180,9]],
+      points: [[130,0],[142,1],[148,2],[151,3],[155,4],[158,5],[163,6],[167,7],[171,8],[180,9]],
     },
   },
   {
@@ -246,6 +247,7 @@ export const BUILD_QUESTIONS = [
     answer: { min: 34, q1: 39, median: 45, q3: 55, max: 64 },
     scaleMin: 30, scaleMax: 70, unit: "Time (s)",
     hint: "11 values - the median is the 6th. Q1 is the 3rd, Q3 is the 9th.",
+    distractors: [36, 40, 44, 47, 50, 57, 61],
     cumFreq: {
       totalFreq: 11,
       points: [[30,0],[34,0],[37,1],[39,2],[41,3],[43,4],[45,5],[48,6],[52,7],[55,9],[59,10],[64,11]],
@@ -258,6 +260,7 @@ export const BUILD_QUESTIONS = [
     answer: { min: 12, q1: 25, median: 34, q3: 45, max: 58 },
     scaleMin: 0, scaleMax: 70, unit: "Score (marks)",
     hint: "13 values - the median is the 7th. Q1 is the 4th, Q3 is the 10th.",
+    distractors: [15, 20, 27, 33, 38, 43, 50, 55],
     cumFreq: {
       totalFreq: 13,
       points: [[0,0],[12,0],[18,1],[22,2],[25,3],[28,4],[31,5],[34,6],[36,7],[41,8],[45,10],[48,11],[52,12],[58,13]],

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useProgress } from "../context/ProgressContext";
 import { useUser } from "../context/UserContext";
+import HospitalExplainer from "./maths/statistics/boxplots/learn/HospitalExplainer";
 
 const STRAND_COLORS = {
   Statistics:  { border: "#059669", bg: "#ecfdf5", text: "#065f46" },
@@ -138,6 +139,12 @@ function TopicDetail({ topic, onBack, onLaunchInteractive }) {
 
       {topic.whyItMatters && (
         <p style={{ fontSize: "14px", color: "#4b5563", lineHeight: 1.7, marginBottom: "16px" }}>{topic.whyItMatters}</p>
+      )}
+
+      {topic.id === "s1" && (
+        <div style={{ marginBottom: "8px" }}>
+          <HospitalExplainer />
+        </div>
       )}
 
       {topic.points && (

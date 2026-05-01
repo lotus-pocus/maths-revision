@@ -61,6 +61,20 @@ const DEFINITIONS = {
     formula: "Add up frequencies from the bottom row upwards.",
     position: "Y-axis of a cumulative frequency graph.",
   },
+  "Outlier": {
+    full: "Outlier",
+    definition:
+      "A result that sits far apart from the rest of the data — much higher or much lower than everyone else. In Ward B, the 3-minute and 68-minute patients are outliers. Most people waited 25–55 minutes, so those two stand far outside the group.",
+    formula: "Also called: an extreme value or extreme result.",
+    position: "A very long whisker on a box plot is often a sign of an outlier pulling the data out.",
+  },
+  "symmetric": {
+    full: "Symmetric data",
+    definition:
+      "When results spread evenly on both sides of the middle — roughly as many values a little above as a little below, with nothing extreme at either end. Ward A's waiting times (22–48 min) are a good example: no wild highs, no wild lows.",
+    formula: "Also called: evenly spread or balanced data.",
+    position: "When data is symmetric, the mean and median sit close together and both describe the group well.",
+  },
 };
 
 // ── The component ─────────────────────────────────────────────────────────

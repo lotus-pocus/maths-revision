@@ -25,86 +25,213 @@ function BottomNav({ onBack, onNext, nextLabel = "Next →", backLabel = "← Ba
 
 // ── Stage 0: Read the cumulative frequency graph ──────────────────────────
 function StageReadGraph({ q, onBack, onComplete }) {
-  const [revealed, setRevealed] = useState(false);
+  const n = q.rawData.length;
 
-  const cf = q.cumFreq;
-  const n  = q.rawData.length;
+  // Build shuffled pool: correct values + distractors, sorted numerically
+  const pool = React.useMemo(() => {
+    const all = [...q.rawData, ...(q.distractors || [])];
+    return all.sort((a, b) => a - b);
+  }, [q]);
 
-  // Work out which frequencies to read at
-  const q1freq     = Math.ceil(n / 4);
-  const medFreq    = Math.ceil(n / 2);
-  const q3freq     = Math.ceil((3 * n) / 4);
+  const [filled, setFilled]   = useState([]);
+  const [checked, setChecked] = useState(false);
 
-  const readPoints = [
-    { freq: q1freq,  label: `Q1 (position ${q1freq} of ${n})`,     value: q.answer.q1,     color: C.accent },
-    { freq: medFreq, label: `Median (position ${medFreq} of ${n})`, value: q.answer.median, color: C.text },
-    { freq: q3freq,  label: `Q3 (position ${q3freq} of ${n})`,      value: q.answer.q3,     color: C.accent },
-  ];
+  const allFilled = filled.length === n;
+
+  // Tap a number from the pool → add to filled if not already used and not full
+  const handleTap = (val) => {
+    if (checked) return;
+    if (filled.length >= n) return;
+    if (filled.includes(val)) {
+      // tap again to remove
+      setFilled(prev => { const i = prev.indexOf(val); return prev.filter((_, idx) => idx !== i); });
+      return;
+    }
+    setFilled(prev => [...prev, val]);
+  };
+
+  // Remove a value from the table by tapping its slot
+  const handleRemove = (idx) => {
+    if (checked) return;
+    setFilled(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const [wrongSlots, setWrongSlots] = useState(new Set());
+  const [showError,  setShowError]  = useState(false);
+
+  const handleCheck = () => {
+    const correctSet = new Set(q.rawData);
+    const wrong = new Set();
+    filled.forEach((v, i) => { if (!correctSet.has(v)) wrong.add(i); });
+    if (wrong.size === 0) {
+      setChecked(true);
+      setWrongSlots(new Set());
+      setShowError(false);
+    } else {
+      setWrongSlots(wrong);
+      setShowError(true);
+    }
+  };
+
+  const handleReset = () => {
+    setFilled([]);
+    setChecked(false);
+    setWrongSlots(new Set());
+    setShowError(false);
+  };
+
+  // Which values in the filled list are correct
+  const correctSet = new Set(q.rawData);
+  const usedCount  = (val) => filled.filter(v => v === val).length;
 
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-        <p style={{ fontSize: "12px", fontWeight: "700", color: C.purple, margin: 0, textTransform: "uppercase", letterSpacing: "0.06em" }}>Stage 0 of 3 — Read the Graph</p>
-      </div>
+      <p style={{ fontSize: "12px", fontWeight: "700", color: C.purple, margin: "0 0 12px", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+        Stage 0 of 3 — Read the Graph
+      </p>
 
+      {/* Explainer */}
       <div style={{ background: C.card, border: `1px solid ${C.purple}40`, borderRadius: "12px", padding: "14px 16px", marginBottom: "16px" }}>
         <p style={{ fontSize: "12px", fontWeight: "700", color: C.purple, marginBottom: "6px" }}>What is a cumulative frequency graph?</p>
         <p style={{ fontSize: "13px", color: C.text, lineHeight: 1.7, margin: "0 0 8px" }}>
-          Instead of showing individual values, this graph builds up a running total. The y-axis shows "how many values are at or below this point." You can read off Q1, the median and Q3 directly from it.
+          Instead of showing individual values, this graph builds up a running total. Each point on the curve tells you how many values fall at or below that x-axis value.
         </p>
         <p style={{ fontSize: "13px", color: C.text, lineHeight: 1.7, margin: 0 }}>
-          <strong style={{ color: C.purple }}>How to read it:</strong> Find the frequency on the y-axis → draw a line across to the curve → drop straight down to the x-axis. That value is your answer.
+          <strong style={{ color: C.purple }}>How to read off a value:</strong> Find the frequency on the y-axis → draw a line across to the curve → drop straight down to the x-axis.
         </p>
       </div>
 
-      {/* The cumulative frequency graph */}
+      {/* Graph — no read lines, student reads it themselves */}
       <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: "12px", padding: "16px", marginBottom: "16px" }}>
-        <p style={{ fontSize: "12px", fontWeight: "700", color: C.white, marginBottom: "4px" }}>{q.label} — {q.question}</p>
         <p style={{ fontSize: "11px", color: C.muted, marginBottom: "12px" }}>
-          The dashed lines show where to read Q1, Median and Q3. Try reading the values yourself first — then reveal below to check.
+          Each whole number on the y-axis represents one student. When the cumulative frequency reaches <strong>1</strong>, drag down to the x-axis to find the 1st student's value. When it reaches <strong>2</strong>, that's the 2nd student — and so on up to <strong>{q.cumFreq.totalFreq}</strong>.
         </p>
         <CumFreqGraph
-          sets={[{ label: q.unit, color: C.accent, points: cf.points }]}
-          totalFreq={cf.totalFreq}
+          sets={[{ label: q.unit, color: C.accent, points: q.cumFreq.points }]}
+          totalFreq={q.cumFreq.totalFreq}
           scaleMin={q.scaleMin}
           scaleMax={q.scaleMax}
           unit={q.unit}
-          readPoints={readPoints}
+          readPoints={[]}
+          showRuler={true}
         />
       </div>
 
-      {/* Reveal the read-off values */}
-      <button onClick={() => setRevealed(!revealed)} style={{ width: "100%", padding: "12px", background: revealed ? "#a78bfa30" : C.purple, color: revealed ? C.purple : C.bg, border: `1px solid ${C.purple}`, borderRadius: "10px", fontSize: "14px", fontWeight: "700", cursor: "pointer", marginBottom: "16px" }}>
-        {revealed ? "Hide values" : "Reveal values from the graph"}
-      </button>
-
-      {revealed && (
-        <div>
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "16px" }}>
-            {readPoints.map((rp) => (
-              <div key={rp.freq} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 14px", background: C.card, borderRadius: "8px", borderLeft: `3px solid ${rp.color}` }}>
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: "12px", fontWeight: "600", color: rp.color, margin: "0 0 2px" }}>{rp.label}</p>
-                  <p style={{ fontSize: "11px", color: C.muted, margin: 0 }}>Read across from {rp.freq} on the y-axis → drop down to x-axis</p>
-                </div>
-                <p style={{ fontSize: "18px", fontWeight: "800", color: rp.color, margin: 0 }}>{rp.value}</p>
-              </div>
-            ))}
-            <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 14px", background: C.card, borderRadius: "8px", borderLeft: `3px solid ${C.muted}` }}>
-              <div style={{ flex: 1 }}>
-                <p style={{ fontSize: "12px", fontWeight: "600", color: C.muted, margin: "0 0 2px" }}>Min and Max — from the raw data</p>
-                <p style={{ fontSize: "11px", color: C.muted, margin: 0 }}>First and last values once ordered</p>
-              </div>
-              <p style={{ fontSize: "13px", fontWeight: "700", color: C.muted, margin: 0 }}>{q.answer.min} – {q.answer.max}</p>
+      {/* Blank table of slots */}
+      <p style={{ fontSize: "12px", fontWeight: "700", color: C.text, margin: "0 0 8px" }}>
+        Tap the values below to fill in all {n} data points:
+      </p>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "8px", minHeight: "52px", padding: "10px", background: checked ? "#ecfdf5" : C.surface, border: `1.5px solid ${checked ? C.accent : C.border}`, borderRadius: "12px", transition: "background 0.2s, border-color 0.2s" }}>
+        {Array.from({ length: n }).map((_, i) => {
+          const isWrong = wrongSlots.has(i);
+          const isFilled = filled[i] !== undefined;
+          let bg     = isFilled ? (checked ? C.accentDim : isWrong ? "#fef2f2" : "#f5f3ff") : "#f9fafb";
+          let border = isFilled ? (checked ? C.accent    : isWrong ? "#dc2626" : C.purple)  : C.border;
+          let color  = isFilled ? (checked ? C.accent    : isWrong ? "#dc2626" : C.purple)  : C.muted;
+          return (
+            <div
+              key={i}
+              onClick={() => isFilled && !checked && handleRemove(i)}
+              style={{
+                width: "46px", height: "38px", borderRadius: "8px",
+                border: `2px solid ${border}`,
+                background: bg, color,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: "13px", fontWeight: "700",
+                cursor: isFilled && !checked ? "pointer" : "default",
+                transition: "all 0.15s",
+                boxShadow: isWrong ? "0 0 0 2px #fca5a5" : "none",
+              }}
+            >
+              {isFilled ? filled[i] : "?"}
             </div>
-          </div>
+          );
+        })}
+        {filled.length === 0 && (
+          <p style={{ fontSize: "12px", color: C.muted, margin: "auto 0", paddingLeft: "4px" }}>Tap numbers below to add them here…</p>
+        )}
+      </div>
 
-          <div style={{ background: "#a78bfa20", border: `1px solid ${C.purple}40`, borderRadius: "10px", padding: "12px 14px", marginBottom: "16px" }}>
-            <p style={{ fontSize: "12px", color: C.purple, margin: 0, lineHeight: 1.6 }}>
-              💡 <strong>The connection:</strong> In Stage 1 you'll order the raw data and see exactly why these positions give you Q1, Median and Q3 — the graph and the ordered list tell the same story.
+      {/* Error message */}
+      {showError && (
+        <div style={{ background: "#fef2f2", border: "1.5px solid #dc2626", borderRadius: "8px", padding: "10px 12px", marginBottom: "12px" }}>
+          <p style={{ fontSize: "12px", color: "#dc2626", margin: 0, lineHeight: 1.6 }}>
+            <strong>❌ {[...wrongSlots].map(i => filled[i]).join(", ")} {wrongSlots.size === 1 ? "is" : "are"} not on the graph.</strong>{" "}
+            Tap the red value{wrongSlots.size !== 1 ? "s" : ""} to remove and replace with the correct reading.
+          </p>
+        </div>
+      )}
+
+      {/* Number pool */}
+      <p style={{ fontSize: "11px", fontWeight: "700", color: C.muted, margin: "0 0 8px", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+        Choose from these values
+      </p>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "20px" }}>
+        {pool.map((val) => {
+          const used = usedCount(val);
+          const isUsed = used > 0;
+          return (
+            <button
+              key={val}
+              onClick={() => {
+                if (isUsed) {
+                  // tap used number removes last occurrence
+                  setFilled(prev => { const i = prev.lastIndexOf(val); return prev.filter((_, idx) => idx !== i); });
+                } else {
+                  handleTap(val);
+                }
+              }}
+              disabled={checked}
+              style={{
+                width: "46px", height: "38px", borderRadius: "8px",
+                border: `1.5px solid ${isUsed ? C.purple : C.border}`,
+                background: isUsed ? "#f5f3ff" : C.surface,
+                color: isUsed ? C.purple : C.text,
+                fontSize: "13px", fontWeight: "700",
+                cursor: checked ? "default" : "pointer",
+                opacity: isUsed ? 0.45 : 1,
+                transition: "all 0.15s",
+              }}
+            >
+              {val}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Hint */}
+      {!checked && (
+        <div style={{ background: "#f5f3ff", border: `1px solid ${C.purple}40`, borderRadius: "8px", padding: "10px 12px", marginBottom: "16px" }}>
+          <p style={{ fontSize: "12px", color: C.purple, margin: 0, lineHeight: 1.6 }}>
+            💡 <strong>Tip:</strong> {q.hint} Look at where the curve steps up — each step marks one data value.
+          </p>
+        </div>
+      )}
+
+      {/* Check / success state */}
+      {!checked ? (
+        <div style={{ display: "flex", gap: "10px" }}>
+          {filled.length > 0 && (
+            <button onClick={handleReset} style={{ padding: "12px 16px", background: "transparent", border: `1.5px solid ${C.border}`, borderRadius: "10px", fontSize: "13px", fontWeight: "600", color: C.muted, cursor: "pointer" }}>
+              Reset
+            </button>
+          )}
+          <button
+            onClick={handleCheck}
+            disabled={!allFilled}
+            style={{ flex: 1, padding: "13px", background: allFilled ? C.purple : C.border, color: "#fff", border: "none", borderRadius: "10px", fontSize: "14px", fontWeight: "700", cursor: allFilled ? "pointer" : "default", transition: "background 0.2s" }}
+          >
+            {allFilled ? "Check my answers →" : `${n - filled.length} value${n - filled.length !== 1 ? "s" : ""} still to add`}
+          </button>
+        </div>
+      ) : (
+        <div>
+          <div style={{ background: C.accentDim, border: `1.5px solid ${C.accent}`, borderRadius: "12px", padding: "14px", marginBottom: "16px" }}>
+            <p style={{ fontSize: "13px", fontWeight: "800", color: C.accent, margin: "0 0 6px" }}>✓ All {n} values correct!</p>
+            <p style={{ fontSize: "12px", color: C.text, lineHeight: 1.6, margin: 0 }}>
+              In the next stage you'll put these values in order — that's when Q1, the median and Q3 will reveal themselves.
             </p>
           </div>
-
           <BottomNav onBack={onBack} onNext={onComplete} backLabel="← Back to questions" nextLabel="Continue to Stage 1 — Order the data →" />
         </div>
       )}
@@ -188,6 +315,100 @@ function StageOrder({ q, onBack, onComplete }) {
   );
 }
 
+// ── Quartile helper popup ─────────────────────────────────────────────────
+function QuartileHelper({ sorted, which, onClose }) {
+  const n = sorted.length;
+  const half = Math.floor(n / 2);
+  const isQ1 = which === "q1";
+
+  // Edexcel method: split at median, don't include median in either half
+  const lowerHalf = sorted.slice(0, half);
+  const upperHalf = n % 2 === 0 ? sorted.slice(half) : sorted.slice(half + 1);
+  const half2     = isQ1 ? lowerHalf : upperHalf;
+  const halfName  = isQ1 ? "lower" : "upper";
+  const midIdx    = Math.floor(half2.length / 2);
+  const result    = half2.length % 2 === 1 ? half2[midIdx] : (half2[midIdx - 1] + half2[midIdx]) / 2;
+
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: "#fff", borderRadius: "16px", padding: "20px", maxWidth: "380px", width: "100%", boxShadow: "0 20px 60px rgba(0,0,0,0.2)" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
+          <p style={{ fontSize: "14px", fontWeight: "800", color: C.accent, margin: 0 }}>
+            How to find {isQ1 ? "Q1" : "Q3"}
+          </p>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "18px", color: C.muted, lineHeight: 1 }}>✕</button>
+        </div>
+
+        {/* Step 1 — full list */}
+        <div style={{ marginBottom: "12px" }}>
+          <p style={{ fontSize: "11px", fontWeight: "700", color: C.muted, textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 6px" }}>
+            Step 1 — your ordered list ({n} values)
+          </p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
+            {sorted.map((v, i) => {
+              const isMedian  = n % 2 === 1 && i === half;
+              const inTarget  = isQ1 ? i < half : (n % 2 === 0 ? i >= half : i > half);
+              return (
+                <div key={i} style={{
+                  width: "36px", height: "32px", borderRadius: "6px",
+                  background: isMedian ? "#e5e7eb" : inTarget ? C.accentDim : "#f9fafb",
+                  border: `1.5px solid ${isMedian ? C.muted : inTarget ? C.accent : C.border}`,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: "11px", fontWeight: "700",
+                  color: isMedian ? C.muted : inTarget ? C.accent : C.text,
+                  opacity: isMedian ? 0.5 : 1,
+                }}>
+                  {v}
+                </div>
+              );
+            })}
+          </div>
+          <p style={{ fontSize: "11px", color: C.muted, margin: "5px 0 0" }}>
+            Highlighted: the <strong>{halfName} half</strong>{n % 2 === 1 ? " (median excluded)" : ""}
+          </p>
+        </div>
+
+        {/* Step 2 — the half */}
+        <div style={{ marginBottom: "12px" }}>
+          <p style={{ fontSize: "11px", fontWeight: "700", color: C.muted, textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 6px" }}>
+            Step 2 — find the middle of the {halfName} half
+          </p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", marginBottom: "6px" }}>
+            {half2.map((v, i) => {
+              const isMiddle = half2.length % 2 === 1 ? i === midIdx : (i === midIdx - 1 || i === midIdx);
+              return (
+                <div key={i} style={{
+                  width: "36px", height: "32px", borderRadius: "6px",
+                  background: isMiddle ? C.accentDim : "#f9fafb",
+                  border: `1.5px solid ${isMiddle ? C.accent : C.border}`,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: "11px", fontWeight: "700",
+                  color: isMiddle ? C.accent : C.text,
+                }}>
+                  {v}
+                </div>
+              );
+            })}
+          </div>
+          {half2.length % 2 === 0 && (
+            <p style={{ fontSize: "11px", color: C.muted, margin: "0 0 4px" }}>
+              Even number of values → average the two middle ones: ({half2[midIdx - 1]} + {half2[midIdx]}) ÷ 2
+            </p>
+          )}
+        </div>
+
+        {/* Answer */}
+        <div style={{ background: C.accentDim, border: `1.5px solid ${C.accent}`, borderRadius: "10px", padding: "12px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <p style={{ fontSize: "13px", fontWeight: "700", color: C.accent, margin: 0 }}>
+            {isQ1 ? "Q1" : "Q3"} =
+          </p>
+          <p style={{ fontSize: "22px", fontWeight: "800", color: C.accent, margin: 0 }}>{result}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Stage 2: Find the 5 values ────────────────────────────────────────────
 function StageFive({ q, onBack, onComplete }) {
   const sorted = [...q.rawData].sort((a, b) => a - b);
@@ -196,11 +417,13 @@ function StageFive({ q, onBack, onComplete }) {
   const DESCS  = { min: "The smallest value", q1: "The middle of the lower half", median: "The middle value of the whole list", q3: "The middle of the upper half", max: "The largest value" };
   const [inputs,  setInputs]  = useState({ min: "", q1: "", median: "", q3: "", max: "" });
   const [checked, setChecked] = useState(false);
+  const [helper,  setHelper]  = useState(null); // "q1" | "q3" | null
   const results = KEYS.map(k => ({ key: k, ok: parseInt(inputs[k]) === q.answer[k], correct: q.answer[k] }));
   const allOk   = results.every(r => r.ok);
 
   return (
     <div>
+      {helper && <QuartileHelper sorted={sorted} which={helper} onClose={() => setHelper(null)} />}
       <p style={{ fontSize: "12px", fontWeight: "700", color: C.accent, margin: "0 0 12px", textTransform: "uppercase", letterSpacing: "0.06em" }}>Stage 2 of 3 — Find the 5 Values</p>
       <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: "12px", padding: "14px 16px", marginBottom: "16px" }}>
         <p style={{ fontSize: "11px", color: C.muted, marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.06em" }}>Your ordered list</p>
@@ -215,10 +438,19 @@ function StageFive({ q, onBack, onComplete }) {
       <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "16px" }}>
         {KEYS.map(k => {
           const r = results.find(r => r.key === k);
+          const showHelper = (k === "q1" || k === "q3") && !checked;
           return (
             <div key={k} style={{ background: checked ? (r.ok ? "#f0fdf4" : "#fff1f2") : C.card, border: `1px solid ${checked ? (r.ok ? "#86efac" : "#fca5a5") : C.border}`, borderRadius: "10px", padding: "12px 14px", display: "flex", alignItems: "center", gap: "12px" }}>
               <div style={{ flex: 1 }}>
-                <p style={{ fontSize: "12px", fontWeight: "700", color: C.accent, margin: "0 0 2px" }}>{LABELS[k]}</p>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "2px" }}>
+                  <p style={{ fontSize: "12px", fontWeight: "700", color: C.accent, margin: 0 }}>{LABELS[k]}</p>
+                  {showHelper && (
+                    <button
+                      onClick={() => setHelper(k)}
+                      style={{ width: "18px", height: "18px", borderRadius: "50%", border: `1.5px solid ${C.accent}`, background: C.accentDim, color: C.accent, fontSize: "11px", fontWeight: "800", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, lineHeight: 1 }}
+                    >?</button>
+                  )}
+                </div>
                 <p style={{ fontSize: "11px", color: C.muted, margin: 0 }}>{DESCS[k]}</p>
               </div>
               <input type="number" value={inputs[k]} onChange={e => setInputs(prev => ({ ...prev, [k]: e.target.value }))} disabled={checked && r.ok} placeholder="?" style={{ width: "64px", padding: "8px", textAlign: "center", background: C.surface, border: `1px solid ${checked ? (r.ok ? "#16a34a" : C.red) : C.border}`, borderRadius: "8px", color: checked ? (r.ok ? "#15803d" : C.red) : C.text, fontSize: "16px", fontWeight: "700" }} />
@@ -425,7 +657,7 @@ export default function BuildIt() {
         </p>
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
           {BUILD_QUESTIONS.map((bq, i) => (
-            <button key={bq.id} onClick={() => { setQIdx(i); setStage(0); }}
+            <button key={bq.id} onClick={() => { setQIdx(i); setStage(0); window.scrollTo({ top: 0, behavior: "smooth" }); }}
               style={{ padding: "14px 16px", background: C.card, border: `1px solid ${C.border}`,
                 borderRadius: "12px", cursor: "pointer", textAlign: "left",
                 display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -473,12 +705,23 @@ export default function BuildIt() {
 
   return (
     <div>
-      <button onClick={() => setQIdx(null)} style={{ background: "none", border: "none", cursor: "pointer", color: C.muted, fontSize: "13px", padding: "0 0 16px", display: "flex", alignItems: "center", gap: "4px" }}>← Back to questions</button>
+      <button onClick={() => { setQIdx(null); window.scrollTo({ top: 0, behavior: "smooth" }); }} style={{ background: "none", border: "none", cursor: "pointer", color: C.muted, fontSize: "13px", padding: "0 0 12px", display: "flex", alignItems: "center", gap: "4px" }}>← Back to questions</button>
+
+      {/* ── Context strip — always visible ── */}
+      <div style={{ background: qIdx === 0 ? C.accentDim : qIdx === 1 ? "#fffbeb" : "#fef2f2", border: `1.5px solid ${qIdx === 0 ? C.accent : qIdx === 1 ? C.amber : C.red}`, borderRadius: "10px", padding: "12px 14px", marginBottom: "16px", display: "flex", alignItems: "center", gap: "10px" }}>
+        <span style={{ fontSize: "11px", fontWeight: "700", padding: "3px 10px", borderRadius: "99px", flexShrink: 0,
+          color: qIdx === 0 ? C.accent : qIdx === 1 ? C.amber : C.red,
+          border: `1.5px solid ${qIdx === 0 ? C.accent : qIdx === 1 ? C.amber : C.red}`,
+          background: "#fff",
+        }}>{q.label}</span>
+        <p style={{ fontSize: "14px", fontWeight: "700", color: C.text, margin: 0, lineHeight: 1.5 }}>{q.question}</p>
+      </div>
+
       <StageBar />
-      {stage === 0 && <StageReadGraph q={q} onBack={() => { setQIdx(null); setStage(0); }} onComplete={() => setStage(1)} />}
-      {stage === 1 && <StageOrder     q={q} onBack={() => setStage(0)} onComplete={() => setStage(2)} />}
-      {stage === 2 && <StageFive      q={q} onBack={() => setStage(1)} onComplete={() => setStage(3)} />}
-      {stage === 3 && <StageDrag      q={q} onBack={() => setStage(2)} />}
+      {stage === 0 && <StageReadGraph q={q} onBack={() => { setQIdx(null); setStage(0); window.scrollTo({ top: 0, behavior: "smooth" }); }} onComplete={() => { setStage(1); window.scrollTo({ top: 0, behavior: "smooth" }); }} />}
+      {stage === 1 && <StageOrder     q={q} onBack={() => { setStage(0); window.scrollTo({ top: 0, behavior: "smooth" }); }} onComplete={() => { setStage(2); window.scrollTo({ top: 0, behavior: "smooth" }); }} />}
+      {stage === 2 && <StageFive      q={q} onBack={() => { setStage(1); window.scrollTo({ top: 0, behavior: "smooth" }); }} onComplete={() => { setStage(3); window.scrollTo({ top: 0, behavior: "smooth" }); }} />}
+      {stage === 3 && <StageDrag      q={q} onBack={() => { setStage(2); window.scrollTo({ top: 0, behavior: "smooth" }); }} />}
     </div>
   );
 }

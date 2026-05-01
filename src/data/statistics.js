@@ -8,9 +8,8 @@ const statistics = [
     calculator: "both", // appears on all three papers
     papers: [1,2,3],
     realWorldHook:
-      "Hospitals use box plots to compare patient waiting times across different wards — not just the average wait, but whether the times are consistent or all over the place. A business uses them to compare salaries and spot whether pay is fair across a team. Scientists use them to compare results from two experiments. They answer two questions at once: what is typical, and how spread out is everything? Once you can read one, you'll spot them everywhere.",
-    whyItMatters:
-      "Most averages only tell you one thing — the middle. But two classes could have the same average test score while being completely different. In one class everyone scored close to the average. In the other, half the class scored very high and half very low. A box plot shows that difference instantly, by displaying the full spread of results — not just the middle. The key measure of spread is called the Interquartile Range (IQR) — we'll explain exactly what that means in the key points below.",
+      "Two hospital wards. Same average waiting time. Completely different experience. A box plot shows the difference in seconds — a mean never could.",
+    whyItMatters: null,
     points: [
       "A box plot (also called a box-and-whisker diagram) shows how a set of data is spread out using just 5 numbers.",
       "The 5 key values are: Minimum, Lower Quartile (Q1), Median (Q2), Upper Quartile (Q3), Maximum.",

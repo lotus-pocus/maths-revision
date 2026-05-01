@@ -16,6 +16,33 @@ export const SCENARIOS = [
     answer: { min: 15, q1: 27, median: 45, q3: 67, max: 88 },
     decisionText:
       "The median wait is 45 minutes, but the IQR is 40 minutes, so waiting times are quite inconsistent.",
+    interpretation: {
+      median: {
+        value: "45 min",
+        what: "The typical patient waits 45 minutes — half the patients were seen faster, half waited longer.",
+        so: "This is already above the NHS 4-hour target threshold for routine tracking. As a manager, 45 minutes as a typical wait should be on your radar.",
+      },
+      iqr: {
+        value: "40 min",
+        what: "The middle 50% of patients waited anywhere between 27 and 67 minutes — a spread of 40 minutes.",
+        so: "This is the real problem. A 40-minute IQR means the experience is wildly inconsistent. One patient waits 27 minutes, the next waits 67. Patients and staff can't predict or plan around this.",
+      },
+      range: {
+        value: "73 min",
+        what: "The fastest patient waited just 15 minutes; the slowest waited 88 minutes.",
+        so: "That 73-minute gap between best and worst suggests something is going wrong for certain patients — possibly triage, staffing gaps at certain times, or patient complexity. The range alone flags that this ward needs investigating.",
+      },
+      conclusion: "The median tells you things are slow. The IQR tells you they're also unpredictable. Both matter — a ward that's consistently slow is easier to fix than one that's chaotic. This one is both.",
+      examAnswer: {
+        question: "Comment on the waiting times at City Hospital.",
+        answer: "The median waiting time is 45 minutes, suggesting the typical patient waits just under an hour. The IQR is 40 minutes (Q1 = 27, Q3 = 67), which shows that waiting times are very inconsistent — the middle 50% of patients experience a 40-minute variation in their wait.",
+        structure: [
+          "State the median with its value → draw a conclusion",
+          "State the IQR with its value → draw a conclusion",
+          "Always include the actual numbers — never just say 'high' or 'inconsistent' without quoting them",
+        ],
+      },
+    },
     scaleMin: 0,
     scaleMax: 100,
   },
@@ -88,6 +115,34 @@ export const SCENARIOS = [
     ],
     decisionText:
       "The typical delivery time is 5 days, but 25% of parcels take longer than 7 days, which explains the customer complaints.",
+    interpretation: {
+      median: {
+        value: "5 days",
+        what: "The typical parcel takes 5 days to arrive — half of all deliveries were faster, half were slower.",
+        so: "5 days is the baseline expectation you can give customers. If your website promises delivery in 3–4 days, this median alone tells you the courier is already failing that promise for most customers.",
+      },
+      iqr: {
+        value: "4 days",
+        what: "The middle 50% of parcels arrived somewhere between 3 and 7 days — a spread of 4 days.",
+        so: "An IQR of 4 days is relatively manageable — most deliveries land in a predictable window. The problem isn't wild inconsistency, it's that the whole distribution is shifted later than customers expect.",
+      },
+      range: {
+        value: "11 days",
+        what: "The fastest delivery took just 1 day; the slowest took 12 days.",
+        so: "That 11-day gap is the source of the complaints. While most parcels arrive within a week, a meaningful number take 10, 11 or 12 days. Those are the customers leaving bad reviews. The long right whisker on the box plot shows exactly this — a tail of very slow deliveries.",
+      },
+      conclusion: "The courier is broadly consistent for most customers (IQR of 4 days), but the tail of very slow deliveries is damaging. The fix isn't the average customer — it's the 25% waiting over 7 days. That's where attention is needed.",
+      examAnswer: {
+        question: "A business owner says customers are complaining about slow deliveries. Use the box plot to comment on the delivery times.",
+        answer: "The median delivery time is 5 days, suggesting most customers wait just under a week. The IQR is 4 days (Q1 = 3, Q3 = 7), which shows deliveries are fairly consistent for most customers. However, the maximum delivery time is 12 days, and 25% of parcels take longer than 7 days (above Q3), which explains the customer complaints.",
+        structure: [
+          "State the median with its value → draw a conclusion about typical delivery time",
+          "State the IQR with Q1 and Q3 → comment on consistency",
+          "Reference Q3 or the maximum to explain the complaints — link the statistics to the context",
+          "Always use the actual numbers — 'deliveries are slow' on its own scores nothing",
+        ],
+      },
+    },
     scaleMin: 0,
     scaleMax: 14,
   },
