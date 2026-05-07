@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { C } from "../../../../data/angles_data";
 import SectionAngleTypes from "./../learn/SectionAngleTypes";
-import SectionLines from "./../learn/SectionLines";
+import SectionLines      from "./../learn/SectionLines";
+import SectionTriangles  from "./../learn/SectionTriangles";
+import SectionParallel   from "./../learn/SectionParallel";
 
 // ── Section definitions ───────────────────────────────────────────────────
 // Each section maps to its own component file (built one at a time)
@@ -342,8 +344,10 @@ export default function AnglesLearn() {
   // Renders the correct section component by index
   const renderSection = (index, navEl) => {
     const section = SECTIONS[index];
-    if (section.id === "types") return <SectionAngleTypes nav={navEl} />;
-    if (section.id === "lines") return <SectionLines      nav={navEl} />;
+    if (section.id === "types")     return <SectionAngleTypes nav={navEl} />;
+    if (section.id === "lines")     return <SectionLines      nav={navEl} />;
+    if (section.id === "triangles") return <SectionTriangles  nav={navEl} />;
+    if (section.id === "parallel")  return <SectionParallel   nav={navEl} />;
     return <PlaceholderSection section={section} nav={navEl} />;
   };
 
