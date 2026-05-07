@@ -3,8 +3,6 @@ import { C, PARALLEL_RULES } from "../../../../data/angles_data";
 import { AlternateSVG, CoInteriorSVG, CorrespondingSVG } from "../shared/ParallelSVG";
 import MiniCalc from "../../../../components/maths/shared/MiniCalc";
 
-// ── Shared small components ───────────────────────────────────────────────
-
 function ExamTip({ children }) {
   return (
     <div style={{ background: "#fffbeb", border: "1px solid #fcd34d",
@@ -16,8 +14,6 @@ function ExamTip({ children }) {
   );
 }
 
-
-// ── The critical Z-angles warning ─────────────────────────────────────────
 function ZAnglesWarning() {
   const [expanded, setExpanded] = useState(false);
   return (
@@ -26,27 +22,24 @@ function ZAnglesWarning() {
       <div style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
         <span style={{ fontSize: "22px", flexShrink: 0 }}>🚫</span>
         <div style={{ flex: 1 }}>
-          <p style={{ fontSize: "13px", fontWeight: "800", color: "#991b1b",
-            margin: "0 0 6px" }}>
+          <p style={{ fontSize: "13px", fontWeight: "800", color: "#991b1b", margin: "0 0 6px" }}>
             "Z angles" is no longer accepted by Edexcel
           </p>
-          <p style={{ fontSize: "13px", color: "#7f1d1d", margin: "0 0 10px",
-            lineHeight: 1.6 }}>
+          <p style={{ fontSize: "13px", color: "#7f1d1d", margin: "0 0 10px", lineHeight: 1.6 }}>
             You may have learned alternate angles as "Z angles" because the shape
             looks like a Z. <strong>Do not write this in your exam.</strong> Edexcel
             specifically states that informal names like Z angles, C angles and F angles
-            will not receive marks for this reason. You must write the full mathematical name.
+            will not receive marks for the reason. You must write the full mathematical name.
           </p>
-
           <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
             {[
-              { wrong: '"Z angles"',    right: "Alternate angles are equal (parallel lines)"     },
-              { wrong: '"C angles"',    right: "Co-interior angles add up to 180° (parallel lines)" },
-              { wrong: '"F angles"',    right: "Corresponding angles are equal (parallel lines)" },
+              { wrong: '"Z angles"', right: "Alternate angles are equal (parallel lines)" },
+              { wrong: '"C angles"', right: "Co-interior angles add up to 180° (parallel lines)" },
+              { wrong: '"F angles"', right: "Corresponding angles are equal (parallel lines)" },
             ].map(({ wrong, right }) => (
               <div key={wrong} style={{ flex: "1 1 100%", background: "#fff",
                 border: "1px solid #fecaca", borderRadius: "8px", padding: "8px 12px" }}>
-                <p style={{ fontSize: "12px", margin: "0 0 4px" }}>
+                <p style={{ fontSize: "12px", margin: 0 }}>
                   <span style={{ color: "#dc2626", fontWeight: "700",
                     textDecoration: "line-through" }}>{wrong}</span>
                   {" "}→{" "}
@@ -55,14 +48,12 @@ function ZAnglesWarning() {
               </div>
             ))}
           </div>
-
           <button onClick={() => setExpanded(e => !e)}
             style={{ background: "none", border: "none", color: "#991b1b",
               fontSize: "12px", fontWeight: "700", cursor: "pointer",
               padding: "8px 0 0", textDecoration: "underline" }}>
             {expanded ? "Hide examiner's note ▲" : "What does the examiner's report say? ▼"}
           </button>
-
           {expanded && (
             <div style={{ background: "#fff5f5", border: "1px solid #fecaca",
               borderRadius: "8px", padding: "10px 12px", marginTop: "8px" }}>
@@ -82,51 +73,38 @@ function ZAnglesWarning() {
   );
 }
 
-// ── Rule tab component — one per parallel line rule ───────────────────────
 function RuleTab({ rule, topValue = 65 }) {
   const [showAnswer, setShowAnswer] = useState(false);
   const isCoInt = rule.id === "cointerior";
   const answer  = isCoInt ? 180 - topValue : topValue;
-
   const DiagramComponent =
-    rule.id === "alternate"    ? AlternateSVG    :
-    rule.id === "cointerior"   ? CoInteriorSVG   :
-                                 CorrespondingSVG;
-
+    rule.id === "alternate"  ? AlternateSVG  :
+    rule.id === "cointerior" ? CoInteriorSVG :
+                               CorrespondingSVG;
   return (
     <div>
-      {/* Rule card */}
       <div style={{ background: rule.colourDim, border: `1.5px solid ${rule.colour}40`,
         borderRadius: "12px", padding: "14px 16px", marginBottom: "16px" }}>
-
-        {/* Shape badge */}
-        <div style={{ display: "flex", alignItems: "center", gap: "10px",
-          marginBottom: "8px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
           <div style={{ width: "32px", height: "32px", borderRadius: "8px",
-            background: rule.colour, display: "flex", alignItems: "center",
-            justifyContent: "center" }}>
+            background: rule.colour, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <span style={{ fontSize: "16px", fontWeight: "900", color: "#fff",
               fontFamily: "monospace" }}>{rule.shape}</span>
           </div>
           <div>
-            <p style={{ fontSize: "13px", fontWeight: "800", color: rule.colour,
-              margin: 0 }}>{rule.label}</p>
+            <p style={{ fontSize: "13px", fontWeight: "800", color: rule.colour, margin: 0 }}>
+              {rule.label}
+            </p>
             <p style={{ fontSize: "11px", color: C.muted, margin: 0 }}>
               {rule.id === "cointerior" ? "adds up to 180°" : "are equal"}
             </p>
           </div>
         </div>
-
         <p style={{ fontSize: "13px", color: C.text, margin: "0 0 12px",
           lineHeight: 1.6 }}>{rule.description}</p>
-
-        {/* Diagram */}
         <div style={{ display: "flex", justifyContent: "center", marginBottom: "8px" }}>
-          <DiagramComponent topValue={topValue} showAnswer={true}
-            width={260} height={180} />
+          <DiagramComponent topValue={topValue} showAnswer={true} width={260} height={180} />
         </div>
-
-        {/* Exam phrase */}
         <div style={{ background: "#fff", border: `1px solid ${rule.colour}40`,
           borderRadius: "8px", padding: "10px 12px" }}>
           <p style={{ fontSize: "11px", fontWeight: "700", color: C.muted,
@@ -140,21 +118,16 @@ function RuleTab({ rule, topValue = 65 }) {
         </div>
       </div>
 
-      {/* Quick practice */}
       <div style={{ background: C.surface, border: `1px solid ${C.border}`,
         borderRadius: "12px", padding: "14px 16px" }}>
-        <p style={{ fontSize: "13px", fontWeight: "700", color: C.text,
-          margin: "0 0 4px" }}>
+        <p style={{ fontSize: "13px", fontWeight: "700", color: C.text, margin: "0 0 4px" }}>
           Quick check
         </p>
         <p style={{ fontSize: "13px", color: C.muted, margin: "0 0 12px" }}>
-          {isCoInt
-            ? `The top angle is ${topValue}°. What is x?`
-            : `The top angle is ${topValue}°. What is x?`}
+          The top angle is {topValue}°. What is x?
         </p>
         <div style={{ display: "flex", justifyContent: "center", marginBottom: "12px" }}>
-          <DiagramComponent topValue={topValue} showAnswer={showAnswer}
-            width={260} height={180} />
+          <DiagramComponent topValue={topValue} showAnswer={showAnswer} width={260} height={180} />
         </div>
         {!showAnswer ? (
           <button onClick={() => setShowAnswer(true)}
@@ -173,7 +146,6 @@ function RuleTab({ rule, topValue = 65 }) {
           </div>
         )}
       </div>
-
       <ExamTip>
         Remember: the parallel lines must be marked with arrows (→→) in the diagram
         before you can use any of these rules. If the lines are not marked as parallel,
@@ -183,16 +155,16 @@ function RuleTab({ rule, topValue = 65 }) {
   );
 }
 
-// ── Identify the rule drill ───────────────────────────────────────────────
+// ── Drill ─────────────────────────────────────────────────────────────────
 const DRILL_QS = [
-  { rule: "alternate",    topValue: 72,  answer: 72,        type: "equal"  },
-  { rule: "cointerior",   topValue: 118, answer: 62,        type: "sum"    },
-  { rule: "corresponding",topValue: 53,  answer: 53,        type: "equal"  },
-  { rule: "alternate",    topValue: 41,  answer: 41,        type: "equal"  },
-  { rule: "cointerior",   topValue: 67,  answer: 113,       type: "sum"    },
-  { rule: "corresponding",topValue: 84,  answer: 84,        type: "equal"  },
-  { rule: "alternate",    topValue: 138, answer: 138,       type: "equal"  },
-  { rule: "cointerior",   topValue: 55,  answer: 125,       type: "sum"    },
+  { rule: "alternate",     topValue: 72,  answer: 72,  type: "equal" },
+  { rule: "cointerior",    topValue: 62,  answer: 118, type: "sum"   },
+  { rule: "corresponding", topValue: 53,  answer: 53,  type: "equal" },
+  { rule: "alternate",     topValue: 41,  answer: 41,  type: "equal" },
+  { rule: "cointerior",    topValue: 67,  answer: 113, type: "sum"   },
+  { rule: "corresponding", topValue: 84,  answer: 84,  type: "equal" },
+  { rule: "alternate",     topValue: 55,  answer: 55,  type: "equal" },
+  { rule: "cointerior",    topValue: 55,  answer: 125, type: "sum"   },
 ];
 
 const RULE_LABELS = {
@@ -208,17 +180,17 @@ const RULE_PHRASES = {
 };
 
 function ParallelDrill() {
-  const [index,   setIndex]   = useState(0);
-  const [picked,  setPicked]  = useState(null);   // which rule they chose
-  const [input,   setInput]   = useState("");     // their angle answer
-  const [stage,   setStage]   = useState("rule"); // "rule" → "angle" → "feedback"
-  const [score,   setScore]   = useState(0);
-  const [done,    setDone]    = useState(false);
+  const [index,     setIndex]     = useState(0);
+  const [picked,    setPicked]    = useState(null);
+  const [input,     setInput]     = useState("");
+  const [stage,     setStage]     = useState("rule");
+  const [score,     setScore]     = useState(0);
+  const [done,      setDone]      = useState(false);
+  const [bothRight, setBothRight] = useState(false);
+  const [calcRight, setCalcRight] = useState(false);
 
-  const q        = DRILL_QS[index];
-  const ruleRight  = picked === q.rule;
-  const angleRight = parseInt(input, 10) === q.answer;
-  const bothRight  = ruleRight && angleRight;
+  const q         = DRILL_QS[index];
+  const ruleRight = picked === q.rule;
 
   const handlePickRule = (id) => {
     if (stage !== "rule") return;
@@ -228,8 +200,18 @@ function ParallelDrill() {
 
   const handleCheckAngle = () => {
     if (!input) return;
-    if (bothRight) setScore(s => s + 1);
+    const cr      = Number(input.trim()) === q.answer;
+    const correct = (picked === q.rule) && cr;
+    setCalcRight(cr);
+    setBothRight(correct);
+    if (correct) setScore(s => s + 1);
     setStage("feedback");
+  };
+
+  const handleBack = () => {
+    // Go back one stage
+    if (stage === "angle")    { setStage("rule");  setPicked(null); }
+    if (stage === "feedback") { setStage("angle");  setInput("");    }
   };
 
   const handleNext = () => {
@@ -239,12 +221,14 @@ function ParallelDrill() {
       setPicked(null);
       setInput("");
       setStage("rule");
+      setBothRight(false);
+      setCalcRight(false);
     }
   };
 
   const handleRestart = () => {
-    setIndex(0); setPicked(null); setInput("");
-    setStage("rule"); setScore(0); setDone(false);
+    setIndex(0); setPicked(null); setInput(""); setStage("rule");
+    setScore(0); setDone(false); setBothRight(false); setCalcRight(false);
   };
 
   if (done) {
@@ -254,8 +238,9 @@ function ParallelDrill() {
         <div style={{ fontSize: "44px", marginBottom: "12px" }}>
           {pct === 100 ? "🎉" : pct >= 75 ? "👍" : "💪"}
         </div>
-        <p style={{ fontSize: "20px", fontWeight: "800", color: C.text,
-          margin: "0 0 6px" }}>{score}/{DRILL_QS.length}</p>
+        <p style={{ fontSize: "20px", fontWeight: "800", color: C.text, margin: "0 0 6px" }}>
+          {score}/{DRILL_QS.length}
+        </p>
         <p style={{ fontSize: "14px", color: C.muted, margin: "0 0 20px" }}>
           {pct === 100
             ? "Perfect — parallel line rules are solid!"
@@ -272,13 +257,13 @@ function ParallelDrill() {
   }
 
   const DiagramComponent =
-    q.rule === "alternate"    ? AlternateSVG    :
-    q.rule === "cointerior"   ? CoInteriorSVG   :
-                                CorrespondingSVG;
+    q.rule === "alternate"  ? AlternateSVG  :
+    q.rule === "cointerior" ? CoInteriorSVG :
+                              CorrespondingSVG;
 
   return (
     <div>
-      {/* Progress + stage indicator */}
+      {/* Progress dots */}
       <div style={{ display: "flex", justifyContent: "space-between",
         alignItems: "center", marginBottom: "12px" }}>
         <div style={{ display: "flex", gap: "6px" }}>
@@ -298,18 +283,14 @@ function ParallelDrill() {
       <div style={{ background: C.surface, border: `1px solid ${C.border}`,
         borderRadius: "12px", padding: "16px", marginBottom: "16px",
         display: "flex", justifyContent: "center" }}>
-        <DiagramComponent
-          topValue={q.topValue}
-          showAnswer={stage === "feedback"}
-          width={260} height={180}
-        />
+        <DiagramComponent topValue={q.topValue} showAnswer={stage === "feedback"}
+          width={260} height={180} />
       </div>
 
       {/* Stage 1: Pick the rule */}
       {stage === "rule" && (
         <div>
-          <p style={{ fontSize: "14px", fontWeight: "600", color: C.text,
-            margin: "0 0 12px" }}>
+          <p style={{ fontSize: "14px", fontWeight: "600", color: C.text, margin: "0 0 12px" }}>
             Which rule connects the two highlighted angles?
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
@@ -319,8 +300,9 @@ function ParallelDrill() {
                   border: `2px solid ${C.border}`, background: C.surface,
                   fontSize: "13px", fontWeight: "600", color: C.text,
                   cursor: "pointer", textAlign: "left", transition: "all 0.15s" }}>
-                <span style={{ fontWeight: "700", color: rule.colour,
-                  marginRight: "8px" }}>{rule.shape}</span>
+                <span style={{ fontWeight: "700", color: rule.colour, marginRight: "8px" }}>
+                  {rule.shape}
+                </span>
                 {rule.label}
               </button>
             ))}
@@ -342,13 +324,11 @@ function ParallelDrill() {
               Rule: {RULE_PHRASES[q.rule]}
             </p>
           </div>
-
-          <p style={{ fontSize: "14px", fontWeight: "600", color: C.text,
-            margin: "0 0 12px" }}>
+          <p style={{ fontSize: "14px", fontWeight: "600", color: C.text, margin: "0 0 12px" }}>
             Now find the angle x.
             {q.type === "sum"
-              ? ` Remember: these angles add to 180°.`
-              : ` Remember: these angles are equal.`}
+              ? " Remember: these angles add to 180°."
+              : " Remember: these angles are equal."}
           </p>
           <MiniCalc label="Calculator" />
           <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
@@ -366,39 +346,77 @@ function ParallelDrill() {
               Check
             </button>
           </div>
+          {/* Back button */}
+          <button onClick={handleBack}
+            style={{ width: "100%", marginTop: "8px", padding: "10px",
+              borderRadius: "10px", border: `1.5px solid ${C.border}`,
+              background: C.surface, fontSize: "13px", fontWeight: "600",
+              color: C.muted, cursor: "pointer" }}>
+            ← Change my rule answer
+          </button>
         </div>
       )}
 
-      {/* Stage 3: Full feedback */}
+      {/* Stage 3: Feedback — two separate boxes */}
       {stage === "feedback" && (
         <div>
-          <div style={{ background: bothRight ? C.greenDim : C.redDim,
-            border: `1px solid ${bothRight ? C.green : C.red}`,
-            borderRadius: "10px", padding: "12px 14px", marginBottom: "12px" }}>
+          {/* Rule feedback */}
+          <div style={{ background: ruleRight ? C.greenDim : C.redDim,
+            border: `1px solid ${ruleRight ? C.green : C.red}`,
+            borderRadius: "10px", padding: "12px 14px", marginBottom: "8px" }}>
             <p style={{ fontSize: "13px", fontWeight: "700",
-              color: bothRight ? C.green : C.red, margin: "0 0 6px" }}>
-              {bothRight ? "✓ Correct!" : "✗ Not quite"}
+              color: ruleRight ? C.green : C.red, margin: "0 0 4px" }}>
+              {ruleRight ? "✓ Correct rule" : "✗ Wrong rule"}
             </p>
-            <p style={{ fontSize: "13px", color: C.text, margin: "0 0 4px" }}>
-              <strong>Rule:</strong> {RULE_LABELS[q.rule]}
+            <p style={{ fontSize: "12px", color: C.muted, margin: 0, fontStyle: "italic" }}>
+              {ruleRight
+                ? `"${RULE_PHRASES[q.rule]}"`
+                : `It's ${RULE_LABELS[q.rule]} — write: "${RULE_PHRASES[q.rule]}"`}
             </p>
-            <p style={{ fontSize: "13px", color: C.text, margin: "0 0 4px",
+          </div>
+
+          {/* Calculation feedback */}
+          <div style={{ background: calcRight ? C.greenDim : C.redDim,
+            border: `1px solid ${calcRight ? C.green : C.red}`,
+            borderRadius: "10px", padding: "12px 14px", marginBottom: "8px" }}>
+            <p style={{ fontSize: "13px", fontWeight: "700",
+              color: calcRight ? C.green : C.red, margin: "0 0 4px" }}>
+              {calcRight ? "✓ Correct calculation" : "✗ Wrong angle"}
+            </p>
+            <p style={{ fontSize: "13px", color: C.text, margin: 0,
               fontFamily: "monospace", fontWeight: "600" }}>
               {q.type === "sum"
                 ? `x = 180° − ${q.topValue}° = ${q.answer}°`
                 : `x = ${q.answer}° (equal angles)`}
             </p>
-            <p style={{ fontSize: "12px", color: C.muted, margin: 0,
-              fontStyle: "italic" }}>
-              Reason to write: "{RULE_PHRASES[q.rule]}"
-            </p>
           </div>
-          <button onClick={handleNext}
-            style={{ width: "100%", padding: "13px", borderRadius: "10px",
-              border: "none", background: C.accent, color: "#fff",
-              fontSize: "14px", fontWeight: "700", cursor: "pointer" }}>
-            {index + 1 >= DRILL_QS.length ? "See my score →" : "Next →"}
-          </button>
+
+          {/* No mark warning — calc right but rule wrong */}
+          {calcRight && !ruleRight && (
+            <div style={{ background: "#fef3c7", border: "1px solid #fcd34d",
+              borderRadius: "10px", padding: "10px 14px", marginBottom: "8px" }}>
+              <p style={{ fontSize: "12px", color: "#92400e", margin: 0, lineHeight: 1.6 }}>
+                ⚠️ In the exam you would lose the reason mark even though your
+                calculation was correct. Both the angle AND the rule name must be right.
+              </p>
+            </div>
+          )}
+
+          {/* Next / Back buttons */}
+          <div style={{ display: "flex", gap: "8px", marginTop: "4px" }}>
+            <button onClick={handleBack}
+              style={{ flex: 1, padding: "13px", borderRadius: "10px",
+                border: `1.5px solid ${C.border}`, background: C.surface,
+                fontSize: "13px", fontWeight: "600", color: C.muted, cursor: "pointer" }}>
+              ← Back
+            </button>
+            <button onClick={handleNext}
+              style={{ flex: 2, padding: "13px", borderRadius: "10px",
+                border: "none", background: C.accent, color: "#fff",
+                fontSize: "14px", fontWeight: "700", cursor: "pointer" }}>
+              {index + 1 >= DRILL_QS.length ? "See my score →" : "Next →"}
+            </button>
+          </div>
         </div>
       )}
     </div>
@@ -408,6 +426,7 @@ function ParallelDrill() {
 // ── Main export ───────────────────────────────────────────────────────────
 export default function SectionParallel({ nav }) {
   const [activeTab, setActiveTab] = useState("warning");
+  const [drillKey,  setDrillKey]  = useState(0);
 
   const tabs = [
     { id: "warning",       label: "⚠️ Read first" },
@@ -417,17 +436,17 @@ export default function SectionParallel({ nav }) {
     { id: "drill",         label: "🎯 Drill"      },
   ];
 
-  const altRule  = PARALLEL_RULES.find(r => r.id === "alternate");
+  const altRule   = PARALLEL_RULES.find(r => r.id === "alternate");
   const coIntRule = PARALLEL_RULES.find(r => r.id === "cointerior");
-  const corrRule = PARALLEL_RULES.find(r => r.id === "corresponding");
+  const corrRule  = PARALLEL_RULES.find(r => r.id === "corresponding");
 
   return (
     <div>
-      {/* Hook */}
       <div style={{ background: C.accentDim, border: `1px solid ${C.accent}40`,
         borderRadius: "12px", padding: "14px 16px", marginBottom: "20px" }}>
-        <p style={{ fontSize: "13px", fontWeight: "700", color: C.accent,
-          margin: "0 0 6px" }}>🌍 Why does this matter?</p>
+        <p style={{ fontSize: "13px", fontWeight: "700", color: C.accent, margin: "0 0 6px" }}>
+          🌍 Why does this matter?
+        </p>
         <p style={{ fontSize: "13px", color: C.text, margin: 0, lineHeight: 1.7 }}>
           Parallel line rules appear in Q9 and Q10 on the Edexcel paper — the
           highest-mark questions in this topic. The examiner's report shows that
@@ -437,12 +456,15 @@ export default function SectionParallel({ nav }) {
         </p>
       </div>
 
-      {/* Sub-tabs */}
       <div style={{ display: "flex", gap: "4px", background: C.surface,
         border: `1px solid ${C.border}`, borderRadius: "10px",
         padding: "4px", marginBottom: "20px", flexWrap: "wrap" }}>
         {tabs.map(t => (
-          <button key={t.id} onClick={() => setActiveTab(t.id)}
+          <button key={t.id}
+            onClick={() => {
+              setActiveTab(t.id);
+              if (t.id === "drill") setDrillKey(k => k + 1);
+            }}
             style={{ flex: "1 1 auto", padding: "8px 6px", borderRadius: "7px",
               border: "none", cursor: "pointer", fontSize: "11px", fontWeight: "600",
               transition: "all 0.15s", minWidth: "60px",
@@ -455,16 +477,12 @@ export default function SectionParallel({ nav }) {
         ))}
       </div>
 
-      {/* Tab content */}
       {activeTab === "warning" && (
         <div>
           <ZAnglesWarning />
-
-          {/* Quick summary of all three rules */}
           <div style={{ background: C.surface, border: `1px solid ${C.border}`,
             borderRadius: "12px", padding: "14px 16px", marginBottom: "12px" }}>
-            <p style={{ fontSize: "13px", fontWeight: "700", color: C.text,
-              margin: "0 0 12px" }}>
+            <p style={{ fontSize: "13px", fontWeight: "700", color: C.text, margin: "0 0 12px" }}>
               The three rules — at a glance
             </p>
             {PARALLEL_RULES.map(rule => (
@@ -494,20 +512,18 @@ export default function SectionParallel({ nav }) {
               </div>
             ))}
           </div>
-
-          <p style={{ fontSize: "13px", color: C.muted, textAlign: "center",
-            margin: "0 0 4px" }}>
+          <p style={{ fontSize: "13px", color: C.muted, textAlign: "center", margin: "0 0 4px" }}>
             Tap the tabs above to learn each rule in detail
           </p>
         </div>
       )}
 
-      {activeTab === "alternate"     && altRule  && <RuleTab rule={altRule}  topValue={65} />}
-      {activeTab === "cointerior"    && coIntRule && <RuleTab rule={coIntRule} topValue={65} />}
-      {activeTab === "corresponding" && corrRule  && <RuleTab rule={corrRule} topValue={65} />}
-      {activeTab === "drill"         && <ParallelDrill />}
+      {activeTab === "alternate"     && altRule   && <RuleTab rule={altRule}   topValue={65} />}
+      {activeTab === "cointerior"    && coIntRule  && <RuleTab rule={coIntRule} topValue={65} />}
+      {activeTab === "corresponding" && corrRule   && <RuleTab rule={corrRule}  topValue={65} />}
+      {activeTab === "drill"         && <ParallelDrill key={drillKey} />}
 
-      {nav}
+      {activeTab !== "drill" && nav}
     </div>
   );
 }
