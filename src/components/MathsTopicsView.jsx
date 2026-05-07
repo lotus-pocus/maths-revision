@@ -12,6 +12,15 @@ const STRAND_COLORS = {
   Ratio:       { border: "#0891b2", bg: "#ecfeff", text: "#164e63" },
 };
 
+const STRAND_ICONS = {
+  Statistics:  "📊",
+  Geometry:    "📐",
+  Algebra:     "🔣",
+  Number:      "🔢",
+  Probability: "🎲",
+  Ratio:       "⚖️",
+};
+
 const TIER_BADGE = {
   both:       { label: "Foundation & Higher", bg: "#f3f4f6", color: "#374151" },
   higher:     { label: "Higher only",          bg: "#fef3c7", color: "#92400e" },
@@ -229,6 +238,57 @@ function TopicDetail({ topic, onBack, onLaunchInteractive }) {
   );
 }
 
+// ── Collapsible strand group ──────────────────────────────────────────────
+function StrandGroup({ strand, topics, onSelect, isTopicUnderstood, defaultOpen }) {
+  const [open, setOpen] = useState(defaultOpen);
+  const sc         = STRAND_COLORS[strand] || STRAND_COLORS.Statistics;
+  const icon       = STRAND_ICONS[strand]  || "📚";
+  const strandDone = topics.filter((t) => isTopicUnderstood(t.id)).length;
+  const allDone    = strandDone === topics.length;
+
+  return (
+    <div style={{ marginBottom: "10px", borderRadius: "12px", overflow: "hidden", border: `1px solid ${sc.border}40` }}>
+      <button
+        onClick={() => setOpen((o) => !o)}
+        style={{
+          width: "100%", display: "flex", alignItems: "center", gap: "10px",
+          padding: "13px 16px",
+          background: open ? sc.bg : "#ffffff",
+          border: "none", cursor: "pointer", textAlign: "left",
+          transition: "background 0.15s",
+        }}
+      >
+        <span style={{ fontSize: "18px", flexShrink: 0 }}>{icon}</span>
+        <div style={{ flex: 1 }}>
+          <span style={{ fontSize: "14px", fontWeight: "700", color: sc.text }}>{strand}</span>
+          <span style={{ fontSize: "12px", color: "#9ca3af", marginLeft: "8px" }}>
+            {strandDone}/{topics.length} understood
+          </span>
+        </div>
+        {allDone && (
+          <span style={{ fontSize: "11px", fontWeight: "700", padding: "2px 8px", borderRadius: "99px",
+            background: "#dcfce7", color: "#15803d", flexShrink: 0 }}>✓ Complete</span>
+        )}
+        <span style={{
+          fontSize: "16px", color: sc.border, flexShrink: 0,
+          transition: "transform 0.2s",
+          display: "inline-block",
+          transform: open ? "rotate(180deg)" : "rotate(0deg)",
+        }}>▾</span>
+      </button>
+
+      {open && (
+        <div style={{ padding: "0 10px 10px", background: sc.bg, display: "flex", flexDirection: "column", gap: "8px" }}>
+          {topics.map((topic) => (
+            <TopicCard key={topic.id} topic={topic} onSelect={onSelect} understood={isTopicUnderstood(topic.id)} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Main export ───────────────────────────────────────────────────────────
 export default function MathsTopicsView({ allTopics, onLaunchTopic }) {
   const [selectedId, setSelectedId] = useState(null);
   const { isTopicUnderstood, getUnderstoodTopics } = useProgress();
@@ -256,30 +316,19 @@ export default function MathsTopicsView({ allTopics, onLaunchTopic }) {
       <p style={{ fontSize: "14px", color: "#6b7280", marginBottom: "12px", lineHeight: 1.5 }}>
         {activeUser ? `${activeUser.displayName} — ` : ""}{done} of {total} topics marked as understood
       </p>
-      <div style={{ height: "6px", background: "#e5e7eb", borderRadius: "99px", marginBottom: "24px", overflow: "hidden" }}>
+      <div style={{ height: "6px", background: "#e5e7eb", borderRadius: "99px", marginBottom: "20px", overflow: "hidden" }}>
         <div style={{ height: "100%", width: `${(done / total) * 100}%`, background: "#059669", borderRadius: "99px", transition: "width 0.4s ease" }} />
       </div>
-      {strands.map((strand) => {
-        const sc = STRAND_COLORS[strand] || STRAND_COLORS.Statistics;
-        const strandTopics = allTopics.filter((t) => t.strand === strand);
-        const strandDone   = strandTopics.filter((t) => isTopicUnderstood(t.id)).length;
-        return (
-          <div key={strand} style={{ marginBottom: "24px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
-              <div style={{ width: "12px", height: "12px", borderRadius: "50%", background: sc.border }} />
-              <h3 style={{ fontSize: "13px", fontWeight: "700", color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.06em", margin: 0 }}>
-                {strand}
-              </h3>
-              <span style={{ fontSize: "12px", color: "#9ca3af" }}>{strandDone}/{strandTopics.length} understood</span>
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              {strandTopics.map((topic) => (
-                <TopicCard key={topic.id} topic={topic} onSelect={setSelectedId} understood={isTopicUnderstood(topic.id)} />
-              ))}
-            </div>
-          </div>
-        );
-      })}
+      {strands.map((strand, i) => (
+        <StrandGroup
+          key={strand}
+          strand={strand}
+          topics={allTopics.filter((t) => t.strand === strand)}
+          onSelect={setSelectedId}
+          isTopicUnderstood={isTopicUnderstood}
+          defaultOpen={false}
+        />
+      ))}
     </div>
   );
 }
