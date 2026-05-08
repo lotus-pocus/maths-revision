@@ -215,13 +215,114 @@ function VertOppSVG({ showAnswer = false }) {
   );
 }
 
+// ── SVG: vertically opposite drill diagram ────────────────────────────────
+function VertOppDrillSVG({ knownAngle = 124, showAnswer = false }) {
+  const W = 260; const H = 160; const cx = W / 2; const cy = H / 2;
+  const len = 90;
+  const toRad = d => (d * Math.PI) / 180;
+  const a = knownAngle; // angle of one pair
+  const r = 26;
+
+  // Four regions: right(0→a), top(a→180), left(180→180+a), bottom(180+a→360)
+  const regions = [
+    { from: 0,       to: a,       label: `${a}°`,        color: C.accent, dim: C.accentDim  },
+    { from: a,       to: 180,     label: `${180-a}°`,    color: C.amber,  dim: C.amberDim   },
+    { from: 180,     to: 180+a,   label: showAnswer ? `${a}°` : "x°",   color: C.accent, dim: showAnswer ? C.accentDim : "#f3f4f6" },
+    { from: 180+a,   to: 360,     label: showAnswer ? `${180-a}°` : "y°", color: C.amber, dim: showAnswer ? C.amberDim : "#f3f4f6" },
+  ];
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", maxWidth: W }}>
+      {regions.map(({ from, to, label, color, dim }) => {
+        const sx = cx + r * Math.cos(toRad(from));
+        const sy = cy - r * Math.sin(toRad(from));
+        const ex = cx + r * Math.cos(toRad(to));
+        const ey = cy - r * Math.sin(toRad(to));
+        const large = (to - from) > 180 ? 1 : 0;
+        const mid = (from + to) / 2;
+        const lx = cx + (r + 18) * Math.cos(toRad(mid));
+        const ly = cy - (r + 18) * Math.sin(toRad(mid));
+        return (
+          <g key={from}>
+            <path d={`M ${cx} ${cy} L ${sx} ${sy} A ${r} ${r} 0 ${large} 0 ${ex} ${ey} Z`}
+              fill={dim} stroke="none" />
+            <path d={`M ${sx} ${sy} A ${r} ${r} 0 ${large} 0 ${ex} ${ey}`}
+              fill="none" stroke={color} strokeWidth={1.5} />
+            <text x={lx} y={ly} textAnchor="middle" dominantBaseline="middle"
+              fontSize={11} fontWeight="700" fill={color}>{label}</text>
+          </g>
+        );
+      })}
+      {/* Two crossing lines */}
+      {[a, 0].map(ang => (
+        <line key={ang}
+          x1={cx - len * Math.cos(toRad(ang))} y1={cy + len * Math.sin(toRad(ang))}
+          x2={cx + len * Math.cos(toRad(ang))} y2={cy - len * Math.sin(toRad(ang))}
+          stroke={C.text} strokeWidth={2} strokeLinecap="round" />
+      ))}
+      <circle cx={cx} cy={cy} r={3} fill={C.text} />
+      {/* Labels A B C */}
+      <text x={cx + len - 6} y={cy - 8} fontSize={11} fill={C.muted}>B</text>
+      <text x={cx - len + 2} y={cy - 8} fontSize={11} fill={C.muted}>A</text>
+      <text x={cx + len * Math.cos(toRad(a)) - 4} y={cy - len * Math.sin(toRad(a)) - 6} fontSize={11} fill={C.muted}>C</text>
+      <text x={cx + 6} y={cy + 14} fontSize={11} fill={C.accent}>O</text>
+    </svg>
+  );
+}
+
+// ── SVG: around a point drill diagram ─────────────────────────────────────
+function PointDrillSVG({ knownAngle = 265, showAnswer = false }) {
+  const W = 260; const H = 180; const cx = W / 2; const cy = H / 2;
+  const len = 70; const r = 30;
+  const toRad = d => (d * Math.PI) / 180;
+  const unknown = 360 - knownAngle;
+
+  // Two rays: one at 0°, one at knownAngle (going anticlockwise)
+  const regions = [
+    { from: 0,          to: knownAngle, label: `${knownAngle}°`, color: C.amber, dim: C.amberDim, large: knownAngle > 180 ? 1 : 0 },
+    { from: knownAngle, to: 360,        label: showAnswer ? `${unknown}°` : "x°", color: C.accent, dim: showAnswer ? C.accentDim : "#f3f4f6", large: unknown > 180 ? 1 : 0 },
+  ];
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", maxWidth: W }}>
+      {regions.map(({ from, to, label, color, dim, large }) => {
+        const sx = cx + r * Math.cos(toRad(from));
+        const sy = cy - r * Math.sin(toRad(from));
+        const ex = cx + r * Math.cos(toRad(to));
+        const ey = cy - r * Math.sin(toRad(to));
+        const mid = from + (to - from) / 2;
+        const labelR = r + (large ? 28 : 20);
+        const lx = cx + labelR * Math.cos(toRad(mid));
+        const ly = cy - labelR * Math.sin(toRad(mid));
+        return (
+          <g key={from}>
+            <path d={`M ${cx} ${cy} L ${sx} ${sy} A ${r} ${r} 0 ${large} 0 ${ex} ${ey} Z`}
+              fill={dim} stroke="none" />
+            <path d={`M ${sx} ${sy} A ${r} ${r} 0 ${large} 0 ${ex} ${ey}`}
+              fill="none" stroke={color} strokeWidth={1.5} />
+            <text x={lx} y={ly} textAnchor="middle" dominantBaseline="middle"
+              fontSize={12} fontWeight="700" fill={color}>{label}</text>
+          </g>
+        );
+      })}
+      {/* Two rays */}
+      <line x1={cx} y1={cy} x2={cx + len} y2={cy} stroke={C.text} strokeWidth={2} strokeLinecap="round" />
+      <line x1={cx} y1={cy}
+        x2={cx + len * Math.cos(toRad(knownAngle))}
+        y2={cy - len * Math.sin(toRad(knownAngle))}
+        stroke={C.text} strokeWidth={2} strokeLinecap="round" />
+      <circle cx={cx} cy={cy} r={3} fill={C.text} />
+    </svg>
+  );
+}
+
 // ── Interactive: find the missing angle ───────────────────────────────────
 const MISSING_ANGLE_Qs = [
-  { rule: "straight", known: 47,  unknown: 133, label: "Angles on a straight line" },
+  { rule: "straight", known: 130, unknown: 50,  label: "Angles on a straight line" },
   { rule: "straight", known: 112, unknown: 68,  label: "Angles on a straight line" },
   { rule: "point",    known: 265, unknown: 95,  label: "Angles around a point"     },
   { rule: "vertOpp",  known: 38,  unknown: 38,  label: "Vertically opposite"       },
-  { rule: "straight", known: 73,  unknown: 107, label: "Angles on a straight line" },
+  { rule: "straight", known: 154, unknown: 26,  label: "Angles on a straight line" },
   { rule: "vertOpp",  known: 124, unknown: 124, label: "Vertically opposite"       },
 ];
 
@@ -298,7 +399,11 @@ function MissingAngleDrill() {
       <div style={{ background: C.surface, border: `1px solid ${C.border}`,
         borderRadius: "12px", padding: "16px", marginBottom: "16px",
         display: "flex", justifyContent: "center" }}>
-        <StraightLineSVG knownAngle={q.known} showAnswer={checked} />
+        {q.rule === "vertOpp"
+          ? <VertOppDrillSVG knownAngle={q.known} showAnswer={checked} />
+          : q.rule === "point"
+          ? <PointDrillSVG knownAngle={q.known} showAnswer={checked} />
+          : <StraightLineSVG knownAngle={q.known} showAnswer={checked} />}
       </div>
 
       {/* Question */}

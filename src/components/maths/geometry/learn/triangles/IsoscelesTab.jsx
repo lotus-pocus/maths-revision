@@ -37,7 +37,7 @@ export default function IsoscelesTab() {
           {[
             { label: "Apex angle",      value: `${apexAngle}°`,              colour: C.amber },
             { label: "Each base angle", value: `${baseAngle}°`,              colour: C.accent },
-            { label: "Total",           value: `${apexAngle + baseAngle * 2}°`, colour: C.green },
+            { label: "Total",           value: `180°`, colour: C.green },
           ].map(({ label, value, colour }) => (
             <div key={label} style={{ flex: 1, background: C.surface,
               border: `1.5px solid ${colour}40`, borderRadius: "10px",
