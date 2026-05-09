@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { C } from "../../../../data/angles_data";
+import { C } from "../../../../../data/angles_data";
 
 // ── Shared UI components used across all Learn sections ───────────────────
 // Import from here instead of defining locally in each section file.

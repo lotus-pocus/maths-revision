@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { C } from "../../../../data/angles_data";
+import { C } from "../../../../../data/angles_data";
 
 const W = 320;
 const H = 260;

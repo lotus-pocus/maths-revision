@@ -1,19 +1,17 @@
 import { useState } from "react";
 import { HookBox, SubTabBar } from "./LearnUI";
-import TriangleSumTab     from "./triangles/TriangleSumTab";
-import IsoscelesTab       from "./triangles/IsoscelesTab";
-import EquilateralTab     from "./triangles/EquilateralTab";
-import CirclePreviewTab   from "./triangles/CirclePreviewTab";
-import TriangleDrill      from "./triangles/TriangleDrill";
-import TriangleExplorer   from "./triangles/TriangleExplorer";
-import RealWorldTriangles from "../realworld/RealWorldTriangles";
+import TriangleSumTab   from "./triangles/TriangleSumTab";
+import IsoscelesTab     from "./triangles/IsoscelesTab";
+import EquilateralTab   from "./triangles/EquilateralTab";
+import CirclePreviewTab from "./triangles/CirclePreviewTab";
+import TriangleDrill    from "./triangles/TriangleDrill";
+import TriangleExplorer from "./triangles/TriangleExplorer";
 
 const TABS = [
   { id: "sum",         label: "Angle sum"   },
   { id: "isosceles",   label: "Isosceles"   },
   { id: "equilateral", label: "Equilateral" },
   { id: "explorer",    label: "🔭 Explorer" },
-  { id: "realworld",   label: "🌍 Real world"},
   { id: "circle",      label: "🔮 Preview"  },
   { id: "drill",       label: "🎯 Drill"    },
 ];
@@ -42,7 +40,6 @@ export default function SectionTriangles({ nav }) {
       {activeTab === "isosceles"   && <IsoscelesTab />}
       {activeTab === "equilateral" && <EquilateralTab />}
       {activeTab === "explorer"    && <TriangleExplorer />}
-      {activeTab === "realworld"   && <RealWorldTriangles />}
       {activeTab === "circle"      && <CirclePreviewTab />}
       {activeTab === "drill"       && <TriangleDrill key={drillKey} />}
 

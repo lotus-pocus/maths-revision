@@ -1,4 +1,4 @@
-import { C, SVG_DEFAULTS } from "../../../../data/angles_data";
+import { C, SVG_DEFAULTS } from "../../../../../data/angles_data";
 
 const { W, H, stroke, font } = SVG_DEFAULTS;
 

@@ -1,4 +1,4 @@
-import { C } from "../../../../../data/angles_data";
+import { C } from "../../../../../../data/angles_data";
 import { EquilateralSVG } from "../../shared/TriangleSVG";
 import { ExamTip, RuleCard } from "../LearnUI";
 

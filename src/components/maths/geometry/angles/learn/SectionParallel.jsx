@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { C, PARALLEL_RULES } from "../../../../data/angles_data";
+import { C, PARALLEL_RULES } from "../../../../../data/angles_data";
 import { AlternateSVG, CoInteriorSVG, CorrespondingSVG } from "../shared/ParallelSVG";
-import MiniCalc from "../../../../components/maths/shared/MiniCalc";
+import MiniCalc from "../../../shared/MiniCalc";
 
 function ExamTip({ children }) {
   return (

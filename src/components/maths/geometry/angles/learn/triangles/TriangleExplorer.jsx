@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { C } from "../../../../../data/angles_data";
+import { C } from "../../../../../../data/angles_data";
 
 // ── Geometry helper: given angles A, B (C = 180-A-B), compute triangle vertices
 // Scales the triangle to always fit within the viewBox with padding

@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { C } from "../../../../data/angles_data";
-import SectionAngleTypes from "./../learn/SectionAngleTypes";
-import SectionLines      from "./../learn/SectionLines";
-import SectionTriangles  from "./../learn/SectionTriangles";
-import SectionParallel   from "./../learn/SectionParallel";
+import SectionAngleTypes      from "./learn/SectionAngleTypes";
+import SectionLines           from "./learn/SectionLines";
+import SectionTriangles       from "./learn/SectionTriangles";
+import SectionQuadrilaterals  from "./learn/SectionQuadrilaterals";
+import SectionParallel        from "./learn/SectionParallel";
 
 // ── Section definitions ───────────────────────────────────────────────────
 // Each section maps to its own component file (built one at a time)
@@ -11,6 +12,7 @@ const SECTIONS = [
   { id: "types",     title: "Angle types"        },
   { id: "lines",     title: "Lines & points"     },
   { id: "triangles", title: "Triangles"          },
+  { id: "quads",     title: "Quadrilaterals"     },
   { id: "parallel",  title: "Parallel lines"     },
   { id: "chaining",  title: "Multi-step problems"},
 ];
@@ -254,6 +256,12 @@ const SECTION_PREVIEWS = {
     "Equilateral triangle: all sides equal → all angles 60°",
     "Why isosceles matters for circle theorems",
   ],
+  quads: [
+    "Angles in any quadrilateral add up to 360°",
+    "Why: any quadrilateral splits into two triangles (2 × 180° = 360°)",
+    "Special properties: square, rectangle, parallelogram, trapezium, kite, rhombus",
+    "The kite rule — the angle Edexcel loves to test in multi-step questions",
+  ],
   parallel: [
     "Alternate angles are equal — NOT 'Z angles' (Edexcel no longer accepts this)",
     "Co-interior angles add up to 180°",
@@ -344,10 +352,11 @@ export default function AnglesLearn() {
   // Renders the correct section component by index
   const renderSection = (index, navEl) => {
     const section = SECTIONS[index];
-    if (section.id === "types")     return <SectionAngleTypes nav={navEl} />;
-    if (section.id === "lines")     return <SectionLines      nav={navEl} />;
-    if (section.id === "triangles") return <SectionTriangles  nav={navEl} />;
-    if (section.id === "parallel")  return <SectionParallel   nav={navEl} />;
+    if (section.id === "types")     return <SectionAngleTypes     nav={navEl} />;
+    if (section.id === "lines")     return <SectionLines           nav={navEl} />;
+    if (section.id === "triangles") return <SectionTriangles       nav={navEl} />;
+    if (section.id === "quads")     return <SectionQuadrilaterals  nav={navEl} />;
+    if (section.id === "parallel")  return <SectionParallel        nav={navEl} />;
     return <PlaceholderSection section={section} nav={navEl} />;
   };
 

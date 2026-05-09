@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { C } from "../../../../data/angles_data";
-import AnglesLearn from "../angles/angles_Learn";
+import AnglesLearn from "./angles_Learn";
+import RealWorldTriangles from "./realworld/RealWorldTriangles";
 
 // Placeholder components for tabs not yet built
 function ComingSoon({ label }) {
@@ -92,10 +93,10 @@ export default function AnglesVisualiser() {
 
         {/* ── Content ── */}
         <div style={{ padding: "0 16px" }}>
-          {mode === "learn"     && <AnglesLearn     key={`learn-${resetKey}`}     />}
-          {mode === "realworld" && <ComingSoon      label="Real World"             />}
-          {mode === "build"     && <ComingSoon      label="Build It"               />}
-          {mode === "exam"      && <ComingSoon      label="Exam Practice"          />}
+          {mode === "learn"     && <AnglesLearn        key={`learn-${resetKey}`} />}
+          {mode === "realworld" && <RealWorldTriangles key={`rw-${resetKey}`}    />}
+          {mode === "build"     && <ComingSoon         label="Build It"           />}
+          {mode === "exam"      && <ComingSoon         label="Exam Practice"      />}
         </div>
 
       </div>

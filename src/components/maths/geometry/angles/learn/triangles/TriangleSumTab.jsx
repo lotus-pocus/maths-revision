@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { C } from "../../../../../data/angles_data";
+import { C } from "../../../../../../data/angles_data";
 import { TriangleSVG } from "../../shared/TriangleSVG";
 import { ExamTip, RuleCard } from "../LearnUI";
 

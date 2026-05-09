@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { C } from "../../../../data/angles_data";
-import MiniCalc from "../../../../components/maths/shared/MiniCalc";
-
-// ── Shared small components ───────────────────────────────────────────────
+import { C } from "../../../../../data/angles_data";
+import MiniCalc from "../../../shared/MiniCalc";
+import { StraightLineSVG } from "../shared/StraightLineSVG";
 
 function ExamTip({ children }) {
   return (
@@ -28,78 +27,12 @@ function RuleCard({ colour, colourDim, icon, title, rule, children }) {
   );
 }
 
-// ── SVG: straight line with two angles ───────────────────────────────────
-function StraightLineSVG({ knownAngle = 130, showAnswer = false }) {
-  const W = 260; const H = 120;
-  const cx = W * 0.45; const cy = H * 0.6;
-  const lineLen = 100;
-  const toRad = d => (d * Math.PI) / 180;
-
-  // The upward ray divides the straight line
-  const rayAngle = 180 - knownAngle; // angle from positive x-axis
-  const rayX = cx + 70 * Math.cos(toRad(rayAngle));
-  const rayY = cy - 70 * Math.sin(toRad(rayAngle));
-
-  const unknown = 180 - knownAngle;
-
-  // Arc for known angle (right side, from 0° to rayAngle)
-  const arcR = 28;
-  const arcStart = { x: cx + arcR, y: cy };
-  const arcEnd   = { x: cx + arcR * Math.cos(toRad(rayAngle)), y: cy - arcR * Math.sin(toRad(rayAngle)) };
-  const arcPath  = `M ${arcStart.x} ${arcStart.y} A ${arcR} ${arcR} 0 0 0 ${arcEnd.x} ${arcEnd.y}`;
-
-  // Arc for unknown angle (left side)
-  const arcR2 = 22;
-  const arcStart2 = { x: cx + arcR2 * Math.cos(toRad(rayAngle)), y: cy - arcR2 * Math.sin(toRad(rayAngle)) };
-  const arcEnd2   = { x: cx - arcR2, y: cy };
-  const arcPath2  = `M ${arcStart2.x} ${arcStart2.y} A ${arcR2} ${arcR2} 0 0 0 ${arcEnd2.x} ${arcEnd2.y}`;
-
-  // Label positions
-  const knownLabelX = cx + (arcR + 18) * Math.cos(toRad(rayAngle / 2));
-  const knownLabelY = cy - (arcR + 18) * Math.sin(toRad(rayAngle / 2));
-  const unknownMid  = rayAngle + (180 - rayAngle) / 2;
-  const unknownLabelX = cx + (arcR2 + 18) * Math.cos(toRad(unknownMid));
-  const unknownLabelY = cy - (arcR2 + 18) * Math.sin(toRad(unknownMid));
-
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", maxWidth: W }}>
-      {/* Straight line */}
-      <line x1={cx - lineLen} y1={cy} x2={cx + lineLen} y2={cy}
-        stroke={C.text} strokeWidth={2} strokeLinecap="round" />
-      {/* Upward ray */}
-      <line x1={cx} y1={cy} x2={rayX} y2={rayY}
-        stroke={C.text} strokeWidth={2} strokeLinecap="round" />
-      {/* Vertex dot */}
-      <circle cx={cx} cy={cy} r={3} fill={C.accent} />
-      {/* Known angle arc */}
-      <path d={arcPath} fill="none" stroke={C.accent} strokeWidth={1.5} />
-      <text x={knownLabelX} y={knownLabelY} textAnchor="middle"
-        dominantBaseline="middle" fontSize={12} fontWeight="700" fill={C.accent}>
-        {knownAngle}°
-      </text>
-      {/* Unknown angle arc */}
-      <path d={arcPath2} fill={showAnswer ? C.accentDim : "#f3f4f6"}
-        stroke={showAnswer ? C.accent : C.muted} strokeWidth={1.5} />
-      <text x={unknownLabelX} y={unknownLabelY} textAnchor="middle"
-        dominantBaseline="middle" fontSize={12} fontWeight="700"
-        fill={showAnswer ? C.accent : C.muted}>
-        {showAnswer ? `${unknown}°` : "x°"}
-      </text>
-      {/* Labels */}
-      <text x={cx - lineLen + 4} y={cy - 8} fontSize={11} fill={C.muted}>A</text>
-      <text x={cx + lineLen - 10} y={cy - 8} fontSize={11} fill={C.muted}>B</text>
-      <text x={rayX + (rayX > cx ? 6 : -14)} y={rayY - 6} fontSize={11} fill={C.muted}>C</text>
-      <text x={cx + 6} y={cy + 14} fontSize={11} fill={C.accent}>O</text>
-    </svg>
-  );
-}
-
 // ── SVG: full turn around a point ─────────────────────────────────────────
 function FullTurnSVG() {
   const W = 220; const H = 160; const cx = W / 2; const cy = H / 2;
   const len = 60;
   const toRad = d => (d * Math.PI) / 180;
-  const angles = [0, 90, 210, 290]; // four rays
+  const angles = [0, 90, 210, 290];
   const colors = [C.accent, C.amber, C.green, C.purple];
   const arcAngles = [
     { from: 0,   to: 90,  label: "90°",  color: C.accent },
@@ -111,7 +44,6 @@ function FullTurnSVG() {
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", maxWidth: W }}>
-      {/* Arc fills */}
       {arcAngles.map(({ from, to, color }) => {
         const sx = cx + r * Math.cos(toRad(from));
         const sy = cy - r * Math.sin(toRad(from));
@@ -124,7 +56,6 @@ function FullTurnSVG() {
             fill={color + "25"} stroke="none" />
         );
       })}
-      {/* Arc outlines + labels */}
       {arcAngles.map(({ from, to, label, color }) => {
         const mid = (from + to) / 2;
         const sx = cx + r * Math.cos(toRad(from));
@@ -143,7 +74,6 @@ function FullTurnSVG() {
           </g>
         );
       })}
-      {/* Rays */}
       {angles.map((a, i) => (
         <line key={a}
           x1={cx} y1={cy}
@@ -151,9 +81,7 @@ function FullTurnSVG() {
           y2={cy - len * Math.sin(toRad(a))}
           stroke={colors[i]} strokeWidth={2} strokeLinecap="round" />
       ))}
-      {/* Centre dot */}
       <circle cx={cx} cy={cy} r={3} fill={C.text} />
-      {/* Total label */}
       <text x={cx} y={cy - r - 42} textAnchor="middle"
         fontSize={11} fontWeight="700" fill={C.muted}>
         90 + 120 + 80 + 70 = 360°
@@ -167,18 +95,14 @@ function VertOppSVG({ showAnswer = false }) {
   const W = 240; const H = 160; const cx = W / 2; const cy = H / 2;
   const len = 90;
   const toRad = d => (d * Math.PI) / 180;
-  const angle = 55; // the angle of one pair
-
-  // Four rays from the intersection
+  const angle = 55;
   const rays = [0, angle, 180, 180 + angle];
   const r = 26;
-
-  // Four angle regions
   const regions = [
-    { from: 0,           to: angle,       label: `${angle}°`,       color: C.accent,  dim: C.accentDim  },
-    { from: angle,       to: 180,         label: `${180-angle}°`,   color: C.amber,   dim: C.amberDim   },
-    { from: 180,         to: 180 + angle, label: showAnswer ? `${angle}°` : "x°", color: C.accent, dim: showAnswer ? C.accentDim : "#f3f4f6" },
-    { from: 180 + angle, to: 360,         label: showAnswer ? `${180-angle}°` : "y°", color: C.amber, dim: showAnswer ? C.amberDim : "#f3f4f6" },
+    { from: 0,           to: angle,       label: `${angle}°`,       color: C.accent, dim: C.accentDim  },
+    { from: angle,       to: 180,         label: `${180-angle}°`,   color: C.amber,  dim: C.amberDim   },
+    { from: 180,         to: 180 + angle, label: showAnswer ? `${angle}°`     : "x°", color: C.accent, dim: showAnswer ? C.accentDim : "#f3f4f6" },
+    { from: 180 + angle, to: 360,         label: showAnswer ? `${180-angle}°` : "y°", color: C.amber,  dim: showAnswer ? C.amberDim  : "#f3f4f6" },
   ];
 
   return (
@@ -203,7 +127,6 @@ function VertOppSVG({ showAnswer = false }) {
           </g>
         );
       })}
-      {/* Lines */}
       {rays.map(a => (
         <line key={a}
           x1={cx - len * Math.cos(toRad(a))} y1={cy + len * Math.sin(toRad(a))}
@@ -220,15 +143,13 @@ function VertOppDrillSVG({ knownAngle = 124, showAnswer = false }) {
   const W = 260; const H = 160; const cx = W / 2; const cy = H / 2;
   const len = 90;
   const toRad = d => (d * Math.PI) / 180;
-  const a = knownAngle; // angle of one pair
+  const a = knownAngle;
   const r = 26;
-
-  // Four regions: right(0→a), top(a→180), left(180→180+a), bottom(180+a→360)
   const regions = [
-    { from: 0,       to: a,       label: `${a}°`,        color: C.accent, dim: C.accentDim  },
-    { from: a,       to: 180,     label: `${180-a}°`,    color: C.amber,  dim: C.amberDim   },
-    { from: 180,     to: 180+a,   label: showAnswer ? `${a}°` : "x°",   color: C.accent, dim: showAnswer ? C.accentDim : "#f3f4f6" },
-    { from: 180+a,   to: 360,     label: showAnswer ? `${180-a}°` : "y°", color: C.amber, dim: showAnswer ? C.amberDim : "#f3f4f6" },
+    { from: 0,     to: a,       label: `${a}°`,                              color: C.accent, dim: C.accentDim  },
+    { from: a,     to: 180,     label: `${180-a}°`,                          color: C.amber,  dim: C.amberDim   },
+    { from: 180,   to: 180+a,   label: showAnswer ? `${a}°`     : "x°",     color: C.accent, dim: showAnswer ? C.accentDim : "#f3f4f6" },
+    { from: 180+a, to: 360,     label: showAnswer ? `${180-a}°` : "y°",     color: C.amber,  dim: showAnswer ? C.amberDim  : "#f3f4f6" },
   ];
 
   return (
@@ -253,7 +174,6 @@ function VertOppDrillSVG({ knownAngle = 124, showAnswer = false }) {
           </g>
         );
       })}
-      {/* Two crossing lines */}
       {[a, 0].map(ang => (
         <line key={ang}
           x1={cx - len * Math.cos(toRad(ang))} y1={cy + len * Math.sin(toRad(ang))}
@@ -261,9 +181,8 @@ function VertOppDrillSVG({ knownAngle = 124, showAnswer = false }) {
           stroke={C.text} strokeWidth={2} strokeLinecap="round" />
       ))}
       <circle cx={cx} cy={cy} r={3} fill={C.text} />
-      {/* Labels A B C */}
-      <text x={cx + len - 6} y={cy - 8} fontSize={11} fill={C.muted}>B</text>
-      <text x={cx - len + 2} y={cy - 8} fontSize={11} fill={C.muted}>A</text>
+      <text x={cx + len - 6}  y={cy - 8} fontSize={11} fill={C.muted}>B</text>
+      <text x={cx - len + 2}  y={cy - 8} fontSize={11} fill={C.muted}>A</text>
       <text x={cx + len * Math.cos(toRad(a)) - 4} y={cy - len * Math.sin(toRad(a)) - 6} fontSize={11} fill={C.muted}>C</text>
       <text x={cx + 6} y={cy + 14} fontSize={11} fill={C.accent}>O</text>
     </svg>
@@ -276,10 +195,8 @@ function PointDrillSVG({ knownAngle = 265, showAnswer = false }) {
   const len = 70; const r = 30;
   const toRad = d => (d * Math.PI) / 180;
   const unknown = 360 - knownAngle;
-
-  // Two rays: one at 0°, one at knownAngle (going anticlockwise)
   const regions = [
-    { from: 0,          to: knownAngle, label: `${knownAngle}°`, color: C.amber, dim: C.amberDim, large: knownAngle > 180 ? 1 : 0 },
+    { from: 0,          to: knownAngle, label: `${knownAngle}°`,                  color: C.amber,  dim: C.amberDim,                    large: knownAngle > 180 ? 1 : 0 },
     { from: knownAngle, to: 360,        label: showAnswer ? `${unknown}°` : "x°", color: C.accent, dim: showAnswer ? C.accentDim : "#f3f4f6", large: unknown > 180 ? 1 : 0 },
   ];
 
@@ -305,7 +222,6 @@ function PointDrillSVG({ knownAngle = 265, showAnswer = false }) {
           </g>
         );
       })}
-      {/* Two rays */}
       <line x1={cx} y1={cy} x2={cx + len} y2={cy} stroke={C.text} strokeWidth={2} strokeLinecap="round" />
       <line x1={cx} y1={cy}
         x2={cx + len * Math.cos(toRad(knownAngle))}
@@ -316,7 +232,7 @@ function PointDrillSVG({ knownAngle = 265, showAnswer = false }) {
   );
 }
 
-// ── Interactive: find the missing angle ───────────────────────────────────
+// ── Drill questions ───────────────────────────────────────────────────────
 const MISSING_ANGLE_Qs = [
   { rule: "straight", known: 130, unknown: 50,  label: "Angles on a straight line" },
   { rule: "straight", known: 112, unknown: 68,  label: "Angles on a straight line" },
@@ -337,27 +253,13 @@ function MissingAngleDrill() {
   const answer  = q.unknown;
   const isRight = parseInt(input, 10) === answer;
 
-  const handleCheck = () => {
-    if (!input) return;
-    setChecked(true);
-    if (isRight) setScore(s => s + 1);
+  const handleCheck   = () => { if (!input) return; setChecked(true); if (isRight) setScore(s => s + 1); };
+  const handleNext    = () => {
+    if (index + 1 >= MISSING_ANGLE_Qs.length) setDone(true);
+    else { setIndex(i => i + 1); setInput(""); setChecked(false); }
   };
-  
-  const handleNext = () => {
-    if (index + 1 >= MISSING_ANGLE_Qs.length) {
-      setDone(true);
-    } else {
-      setIndex(i => i + 1);
-      setInput("");
-      setChecked(false);
-    }
-  };
+  const handleRestart = () => { setIndex(0); setInput(""); setChecked(false); setScore(0); setDone(false); };
 
-  const handleRestart = () => {
-    setIndex(0); setInput(""); setChecked(false);
-    setScore(0); setDone(false);
-  };
-  
   if (done) {
     const pct = Math.round((score / MISSING_ANGLE_Qs.length) * 100);
     return (
@@ -380,7 +282,6 @@ function MissingAngleDrill() {
       </div>
     );
   }
-  
 
   return (
     <div>
@@ -395,20 +296,17 @@ function MissingAngleDrill() {
         </span>
       </div>
 
-      {/* Diagram */}
       <div style={{ background: C.surface, border: `1px solid ${C.border}`,
         borderRadius: "12px", padding: "16px", marginBottom: "16px",
         display: "flex", justifyContent: "center" }}>
         {q.rule === "vertOpp"
           ? <VertOppDrillSVG knownAngle={q.known} showAnswer={checked} />
           : q.rule === "point"
-          ? <PointDrillSVG knownAngle={q.known} showAnswer={checked} />
+          ? <PointDrillSVG   knownAngle={q.known} showAnswer={checked} />
           : <StraightLineSVG knownAngle={q.known} showAnswer={checked} />}
       </div>
 
-      {/* Question */}
-      <p style={{ fontSize: "14px", fontWeight: "600", color: C.text,
-        margin: "0 0 6px" }}>
+      <p style={{ fontSize: "14px", fontWeight: "600", color: C.text, margin: "0 0 6px" }}>
         {q.rule === "vertOpp"
           ? `The angle opposite ${q.known}° is x°. Find x.`
           : q.rule === "point"
@@ -416,21 +314,17 @@ function MissingAngleDrill() {
           : `Angles on a straight line sum to 180°. One angle is ${q.known}°. Find x.`}
       </p>
 
-      {/* Input */}
       {!checked && (
         <div>
           <MiniCalc label="Calculator" />
           <div style={{ display: "flex", gap: "8px", marginBottom: "12px", marginTop: "8px" }}>
-            <input
-              type="number"
-              value={input}
+            <input type="number" value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => e.key === "Enter" && handleCheck()}
               placeholder="Your answer"
               style={{ flex: 1, padding: "12px 14px", borderRadius: "10px",
                 border: `1.5px solid ${C.border}`, fontSize: "16px",
-                color: C.text, outline: "none", boxSizing: "border-box" }}
-            />
+                color: C.text, outline: "none", boxSizing: "border-box" }} />
             <button onClick={handleCheck}
               style={{ padding: "12px 20px", borderRadius: "10px", border: "none",
                 background: C.accent, color: "#fff", fontSize: "14px",
@@ -441,7 +335,6 @@ function MissingAngleDrill() {
         </div>
       )}
 
-      {/* Feedback */}
       {checked && (
         <div>
           <div style={{ background: isRight ? C.greenDim : C.redDim,
@@ -482,7 +375,6 @@ export default function SectionLines({ nav }) {
 
   return (
     <div>
-      {/* Hook */}
       <div style={{ background: C.accentDim, border: `1px solid ${C.accent}40`,
         borderRadius: "12px", padding: "14px 16px", marginBottom: "20px" }}>
         <p style={{ fontSize: "13px", fontWeight: "700", color: C.accent,
@@ -494,7 +386,6 @@ export default function SectionLines({ nav }) {
         </p>
       </div>
 
-      {/* Sub-tabs */}
       <div style={{ display: "flex", gap: "4px", background: C.surface,
         border: `1px solid ${C.border}`, borderRadius: "10px",
         padding: "4px", marginBottom: "20px" }}>
@@ -510,14 +401,10 @@ export default function SectionLines({ nav }) {
         ))}
       </div>
 
-      {/* ── Straight line tab ── */}
       {activeTab === "straight" && (
         <div>
-          <RuleCard
-            colour={C.accent} colourDim={C.accentDim}
-            icon="📏" title="Rule 1"
-            rule="Angles on a straight line add up to 180°"
-          >
+          <RuleCard colour={C.accent} colourDim={C.accentDim}
+            icon="📏" title="Rule 1" rule="Angles on a straight line add up to 180°">
             <p style={{ fontSize: "13px", color: C.text, margin: "0 0 12px", lineHeight: 1.6 }}>
               A straight line is an angle of 180°. Any rays coming off it divide that
               180° into smaller angles — but they must always total 180°.
@@ -525,8 +412,7 @@ export default function SectionLines({ nav }) {
             <div style={{ display: "flex", justifyContent: "center", marginBottom: "12px" }}>
               <StraightLineSVG knownAngle={130} showAnswer={true} />
             </div>
-            <p style={{ fontSize: "12px", color: C.muted, textAlign: "center",
-              margin: "0 0 4px" }}>
+            <p style={{ fontSize: "12px", color: C.muted, textAlign: "center", margin: "0 0 4px" }}>
               130° + 50° = 180° ✓
             </p>
           </RuleCard>
@@ -538,14 +424,10 @@ export default function SectionLines({ nav }) {
         </div>
       )}
 
-      {/* ── Around a point tab ── */}
       {activeTab === "point" && (
         <div>
-          <RuleCard
-            colour={C.amber} colourDim={C.amberDim}
-            icon="🔄" title="Rule 2"
-            rule="Angles around a point add up to 360°"
-          >
+          <RuleCard colour={C.amber} colourDim={C.amberDim}
+            icon="🔄" title="Rule 2" rule="Angles around a point add up to 360°">
             <p style={{ fontSize: "13px", color: C.text, margin: "0 0 12px", lineHeight: 1.6 }}>
               A full turn is 360°. No matter how many rays come from a single point,
               all the angles between them must total exactly 360°.
@@ -562,14 +444,10 @@ export default function SectionLines({ nav }) {
         </div>
       )}
 
-      {/* ── Vertically opposite tab ── */}
       {activeTab === "vertopp" && (
         <div>
-          <RuleCard
-            colour={C.green} colourDim={C.greenDim}
-            icon="✖️" title="Rule 3"
-            rule="Vertically opposite angles are equal"
-          >
+          <RuleCard colour={C.green} colourDim={C.greenDim}
+            icon="✖️" title="Rule 3" rule="Vertically opposite angles are equal">
             <p style={{ fontSize: "13px", color: C.text, margin: "0 0 12px", lineHeight: 1.6 }}>
               When two straight lines cross, they form two pairs of equal angles directly
               opposite each other. These are called <strong>vertically opposite angles</strong>.
@@ -582,12 +460,11 @@ export default function SectionLines({ nav }) {
               Each pair adds to 180° with its neighbour.
             </p>
           </RuleCard>
-
-          {/* Why they're equal — quick proof */}
           <div style={{ background: C.surface, border: `1px solid ${C.border}`,
             borderRadius: "12px", padding: "14px 16px", marginTop: "12px" }}>
-            <p style={{ fontSize: "13px", fontWeight: "700", color: C.text,
-              margin: "0 0 8px" }}>💡 Why are they equal?</p>
+            <p style={{ fontSize: "13px", fontWeight: "700", color: C.text, margin: "0 0 8px" }}>
+              💡 Why are they equal?
+            </p>
             {[
               "Call the top angle x°.",
               "x° + y° = 180° (angles on a straight line)",
@@ -597,24 +474,21 @@ export default function SectionLines({ nav }) {
               <div key={i} style={{ display: "flex", gap: "10px",
                 marginBottom: "6px", alignItems: "flex-start" }}>
                 <div style={{ width: "20px", height: "20px", borderRadius: "50%",
-                  background: C.accent, color: "#fff", fontSize: "11px",
-                  fontWeight: "700", display: "flex", alignItems: "center",
-                  justifyContent: "center", flexShrink: 0 }}>{i + 1}</div>
+                  background: C.accent, color: "#fff", fontSize: "11px", fontWeight: "700",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  flexShrink: 0 }}>{i + 1}</div>
                 <p style={{ fontSize: "13px", color: C.text, margin: 0,
                   lineHeight: 1.6, paddingTop: "1px" }}>{step}</p>
               </div>
             ))}
           </div>
-
           <ExamTip>
             The reason to write is: <strong>"Vertically opposite angles are equal"</strong>.
-            This is often the first step in a multi-step question — spot the X shape,
-            use this rule, then continue with the angles you've found.
+            Spot the X shape, use this rule, then continue with the angles you've found.
           </ExamTip>
         </div>
       )}
 
-      {/* ── Drill tab ── */}
       {activeTab === "drill" && <MissingAngleDrill />}
 
       {nav}

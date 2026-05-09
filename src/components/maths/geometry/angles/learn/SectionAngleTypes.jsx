@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { C, ANGLE_TYPES } from "../../../../data/angles_data";
+import { C, ANGLE_TYPES } from "../../../../../data/angles_data";
 import { AngleSVG, NamedAngleSVG } from "../shared/AngleSVG";
 
 // ── Small reusable bits ───────────────────────────────────────────────────

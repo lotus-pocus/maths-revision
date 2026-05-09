@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { C } from "../../../../../data/angles_data";
+import { C } from "../../../../../../data/angles_data";
 import { TriangleSVG } from "../../shared/TriangleSVG";
-import MiniCalc from "../../../shared/MiniCalc";
+import MiniCalc from "../../../../shared/MiniCalc";
 
 // ── Drill questions ───────────────────────────────────────────────────────
 const QUESTIONS = [

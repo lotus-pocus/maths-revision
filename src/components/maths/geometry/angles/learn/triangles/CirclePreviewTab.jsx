@@ -1,4 +1,4 @@
-import { C } from "../../../../../data/angles_data";
+import { C } from "../../../../../../data/angles_data";
 
 export default function CirclePreviewTab() {
   return (

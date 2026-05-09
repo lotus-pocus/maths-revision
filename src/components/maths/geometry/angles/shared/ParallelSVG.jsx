@@ -1,4 +1,4 @@
-import { C, SVG_DEFAULTS } from "../../../../data/angles_data";
+import { C, SVG_DEFAULTS } from "../../../../../data/angles_data";
 
 const { font } = SVG_DEFAULTS;
 const toRad = (deg) => (deg * Math.PI) / 180;
