@@ -106,7 +106,7 @@ export default function AppShell() {
   const [activeTab,    setActiveTab]    = useState("topics");
   const [activeTopic,  setActiveTopic]  = useState(null);
   const [activeFilter, setActiveFilter] = useState("all");
-  const { activeUser }        = useUser();
+  const { activeUser }          = useUser();
   const { getUnderstoodTopics } = useProgress();
 
   const understood = getUnderstoodTopics();
@@ -115,6 +115,18 @@ export default function AppShell() {
   const handleLaunchTopic = (topicId) => {
     const interactive = INTERACTIVE_TOPICS[topicId];
     if (interactive) setActiveTopic(interactive);
+  };
+
+  // ── Called from SearchTab when user taps a result link ────────────────
+  // If the topic has a full interactive, launch it directly.
+  // Otherwise, switch to the Topics tab so the user can find it.
+  const handleGoToTopic = (topicId) => {
+    const interactive = INTERACTIVE_TOPICS[topicId];
+    if (interactive) {
+      setActiveTopic(interactive);
+    } else {
+      setActiveTab("topics");
+    }
   };
 
   // ── Full-screen topic interactives ────────────────────────────────────
@@ -195,7 +207,7 @@ export default function AppShell() {
           />
         </>}
         {activeTab === "glossary"   && <GlossaryTab />}
-        {activeTab === "search"     && <SearchTab />}
+        {activeTab === "search"     && <SearchTab onGoToTopic={handleGoToTopic} />}
         {activeTab === "about"      && <AboutTab />}
         {activeTab === "references" && <ReferencesTab />}
       </div>

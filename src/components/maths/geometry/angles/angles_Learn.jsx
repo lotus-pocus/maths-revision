@@ -5,6 +5,7 @@ import SectionLines           from "./learn/SectionLines";
 import SectionTriangles       from "./learn/SectionTriangles";
 import SectionQuadrilaterals  from "./learn/SectionQuadrilaterals";
 import SectionParallel        from "./learn/SectionParallel";
+import SectionChaining       from "./learn/SectionChaining";
 
 // ── Section definitions ───────────────────────────────────────────────────
 // Each section maps to its own component file (built one at a time)
@@ -357,8 +358,10 @@ export default function AnglesLearn() {
     if (section.id === "triangles") return <SectionTriangles       nav={navEl} />;
     if (section.id === "quads")     return <SectionQuadrilaterals  nav={navEl} />;
     if (section.id === "parallel")  return <SectionParallel        nav={navEl} />;
+    if (section.id === "chaining") return <SectionChaining nav={navEl} />;
     return <PlaceholderSection section={section} nav={navEl} />;
   };
+
 
   return (
     <div>
