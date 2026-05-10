@@ -67,14 +67,6 @@ const geometry = [
         def: "A triangle with exactly two equal sides. The base angles (opposite the equal sides) are also equal.",
       },
       {
-        term: "Scalene triangle",
-        def: "A triangle where all three sides are different lengths and all three angles are different. There are no equal angles, so no shortcuts — just use angles in a triangle = 180°.",
-      },
-      {
-        term: "Equilateral triangle",
-        def: "A triangle where all three sides are equal length. Because of this, all three angles are always exactly 60°. There is nothing to calculate — if a triangle is equilateral, every angle is 60°.",
-      },
-      {
         term: "Transversal",
         def: "A line that crosses two or more parallel lines.",
       },
