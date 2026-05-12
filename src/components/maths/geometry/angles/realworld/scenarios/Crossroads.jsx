@@ -3,66 +3,77 @@ import { C } from "../../../../../../data/angles_data";
 import MiniCalc from "../../../../shared/MiniCalc";
 
 // ── Q1: Vertically opposite ───────────────────────────────────────────────
-// Two roads cross. One angle = 65°. Find the vertically opposite angle.
+// Roads cross at 65° top sector. Roads calculated so top sector is genuinely narrow.
+// Road1: (90,5)→(230,225), Road2: (230,5)→(90,225). Top sector = 65° ✓
 function Q1Diagram({ showAnswer }) {
   const cx = 160, cy = 115;
-  const road1 = { x1: 40, y1: 60,  x2: 280, y2: 170 }; // diagonal road 1
-  const road2 = { x1: 280, y1: 55, x2: 40,  y2: 175 }; // diagonal road 2
   return (
     <svg viewBox="0 0 320 230" style={{ width: "100%", display: "block" }}>
-      {/* Tarmac background */}
       <rect width={320} height={230} fill="#d1d5db" rx={8} />
-      {/* Road 1 */}
-      <line x1={road1.x1} y1={road1.y1} x2={road1.x2} y2={road1.y2} stroke="#6b7280" strokeWidth={28} />
-      <line x1={road1.x1} y1={road1.y1} x2={road1.x2} y2={road1.y2} stroke="#fff" strokeWidth={2} strokeDasharray="14,10" opacity={0.5} />
-      {/* Road 2 */}
-      <line x1={road2.x1} y1={road2.y1} x2={road2.x2} y2={road2.y2} stroke="#6b7280" strokeWidth={28} />
-      <line x1={road2.x1} y1={road2.y1} x2={road2.x2} y2={road2.y2} stroke="#fff" strokeWidth={2} strokeDasharray="14,10" opacity={0.5} />
-      {/* Intersection */}
+      {/* Road 1: top-left to bottom-right, steep enough for 65° top sector */}
+      <line x1={90} y1={5} x2={230} y2={225} stroke="#6b7280" strokeWidth={28} />
+      <line x1={90} y1={5} x2={230} y2={225} stroke="#fff" strokeWidth={2} strokeDasharray="14,10" opacity={0.5} />
+      {/* Road 2: top-right to bottom-left, mirror image */}
+      <line x1={230} y1={5} x2={90} y2={225} stroke="#6b7280" strokeWidth={28} />
+      <line x1={230} y1={5} x2={90} y2={225} stroke="#fff" strokeWidth={2} strokeDasharray="14,10" opacity={0.5} />
+      {/* Intersection dot */}
       <circle cx={cx} cy={cy} r={5} fill="#374151" />
-      {/* Known angle — top sector */}
-      <text x={cx} y={cy - 28} textAnchor="middle" fontSize={13} fontWeight="800" fill={C.amber}>65°</text>
-      {/* Vertically opposite — bottom sector */}
-      <text x={cx} y={cy + 42} textAnchor="middle" fontSize={13} fontWeight="800"
+      {/* 65° — top sector (narrow) */}
+      <text x={cx} y={cy - 22} textAnchor="middle" fontSize={13} fontWeight="800" fill={C.amber}>65°</text>
+      {/* x° — bottom sector (vertically opposite, also narrow) */}
+      <text x={cx} y={cy + 36} textAnchor="middle" fontSize={13} fontWeight="800"
         fill={showAnswer ? C.green : C.muted}>
         {showAnswer ? "65°" : "x°"}
       </text>
-      {/* Left/right sectors */}
-      <text x={cx - 44} y={cy + 8} textAnchor="middle" fontSize={11} fontWeight="600" fill="#374151">115°</text>
-      <text x={cx + 44} y={cy + 8} textAnchor="middle" fontSize={11} fontWeight="600" fill="#374151">115°</text>
+      {/* Left/right sectors (obtuse = 115°) */}
+      <text x={cx - 50} y={cy + 8} textAnchor="middle" fontSize={11} fontWeight="600" fill="#374151">115°</text>
+      <text x={cx + 50} y={cy + 8} textAnchor="middle" fontSize={11} fontWeight="600" fill="#374151">115°</text>
     </svg>
   );
 }
 
 // ── Q2: Angles on a straight line ─────────────────────────────────────────
-// A side road joins a straight main road. Creates two angles on one side.
-// Known angles: 43° and 112°. Third angle x on the straight line.
-// 43 + 112 + x = 180 → x = 25°. ✓
+// Three roads meet at a point above the main road.
+// Angles from left to right: 50° | x°=35° | 95°. Sum = 180°. ✓
+// Road1 at SVG 220° (up-left, 40° from left beam).
+// Road2 at SVG 260° (up, 10° left of vertical = 80° from left beam = 100° from right beam).
+// Gap between roads = 80-40 = 40°... let's use 55+x+70=180, x=55.
+// Road1: 55° from left beam → SVG 180+55=235°
+// Road2: 70° from right beam → SVG 360-70=290°
+// Gap = (180-55-70) = 55°. Check: 55+55+70=180 ✓
 function Q2Diagram({ showAnswer }) {
-  const cy = 130;
-  const jx = 160; // junction x
-  // Side road angles at junction
+  const jx = 160, jy = 130, ext = 105;
+  const a1 = 235 * Math.PI / 180; // road1: up-left, 55° from left beam
+  const a2 = 290 * Math.PI / 180; // road2: up-right, 70° from right beam
+  const r1x = Math.round(jx + ext * Math.cos(a1));
+  const r1y = Math.round(jy + ext * Math.sin(a1));
+  const r2x = Math.round(jx + ext * Math.cos(a2));
+  const r2y = Math.round(jy + ext * Math.sin(a2));
+
+  // Midpoint direction of the x° gap (between 235° and 290°, midpoint = 262.5°)
+  const midR = 50;
+  const midX = Math.round(jx + midR * Math.cos(262.5 * Math.PI / 180));
+  const midY = Math.round(jy + midR * Math.sin(262.5 * Math.PI / 180));
+
   return (
     <svg viewBox="0 0 320 230" style={{ width: "100%", display: "block" }}>
       <rect width={320} height={230} fill="#d1d5db" rx={8} />
-      {/* Main road (horizontal) */}
-      <rect x={0} y={cy - 18} width={320} height={36} fill="#6b7280" />
-      <line x1={0} y1={cy} x2={320} y2={cy} stroke="#fff" strokeWidth={2} strokeDasharray="14,10" opacity={0.5} />
-      {/* Side road 1 — left angle 43° */}
-      <line x1={jx} y1={cy - 18} x2={jx - 80} y2={cy - 95}
-        stroke="#6b7280" strokeWidth={26} strokeLinecap="round" />
-      {/* Side road 2 — right angle 112° */}
-      <line x1={jx} y1={cy - 18} x2={jx + 60} y2={cy - 95}
-        stroke="#6b7280" strokeWidth={26} strokeLinecap="round" />
-      {/* Angle labels above the road */}
-      <text x={jx - 52} y={cy - 26} textAnchor="middle" fontSize={12} fontWeight="800" fill={C.amber}>43°</text>
-      <text x={jx + 52} y={cy - 26} textAnchor="middle" fontSize={12} fontWeight="800" fill={C.amber}>112°</text>
-      {/* x° — the remaining angle */}
-      <text x={jx + 20} y={cy - 4} textAnchor="middle" fontSize={13} fontWeight="800"
+      {/* Main road */}
+      <rect x={0} y={jy - 18} width={320} height={36} fill="#6b7280" />
+      <line x1={0} y1={jy} x2={320} y2={jy} stroke="#fff" strokeWidth={2} strokeDasharray="14,10" opacity={0.5} />
+      {/* Side roads */}
+      <line x1={jx} y1={jy} x2={r1x} y2={r1y} stroke="#6b7280" strokeWidth={26} strokeLinecap="round" />
+      <line x1={jx} y1={jy} x2={r2x} y2={r2y} stroke="#6b7280" strokeWidth={26} strokeLinecap="round" />
+      {/* 55° label — left of road1 */}
+      <text x={jx - 70} y={jy - 20} textAnchor="middle" fontSize={13} fontWeight="800" fill={C.amber}>55°</text>
+      {/* x° label — in the gap between the two roads */}
+      <text x={midX} y={midY} textAnchor="middle" fontSize={13} fontWeight="800"
         fill={showAnswer ? C.green : C.muted}>
-        {showAnswer ? "25°" : "x°"}
+        {showAnswer ? "55°" : "x°"}
       </text>
-      <text x={160} y={cy + 32} textAnchor="middle" fontSize={11} fontWeight="700" fill="#fff">Main road</text>
+      {/* 70° label — right of road2 */}
+      <text x={jx + 72} y={jy - 20} textAnchor="middle" fontSize={13} fontWeight="800" fill={C.amber}>70°</text>
+      <text x={160} y={jy + 55} textAnchor="middle" fontSize={11} fontWeight="700" fill="#fff">Main road</text>
     </svg>
   );
 }
@@ -123,10 +134,10 @@ const QUESTIONS = [
     badgeColour: C.amber,
     Diagram: Q2Diagram,
     hook: "Two side roads join a straight main road at the same junction. A traffic engineer needs to know angle x — the gap between them — to plan road markings.",
-    question: "Three roads meet on one side of the main road, making angles of 43°, x° and 112° along the straight line. Find x.",
-    answer: 25,
+    question: "Three roads meet on one side of the main road, making angles of 55°, x° and 70° along the straight line. Find x.",
+    answer: 55,
     reason: "Angles on a straight line add up to 180°",
-    working: "43 + x + 112 = 180°\n155 + x = 180°\nx = 25°",
+    working: "55 + x + 70 = 180°\n125 + x = 180°\nx = 55°",
     hint: "All the angles on one side of a straight road must add up to the same total. What is it?",
   },
   {

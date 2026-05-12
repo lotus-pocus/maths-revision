@@ -1,19 +1,19 @@
 import { useState } from "react";
 import { C } from "../../../../../../data/angles_data";
-import MiniCalc from "../../../../shared/MiniCalc";
+import MiniCalc  from "../../../../shared/MiniCalc";
+import AngleArc  from "../../../../shared/geometry/AngleArc";
+import GeomSVG   from "../../../../shared/geometry/GeomSVG";
 
 // ── Q1: Rectangle — all angles 90° ───────────────────────────────────────
-// The penalty box is a rectangle. One corner shown = 90°. Find the opposite.
 function Q1Diagram({ showAnswer }) {
   const x1 = 60, y1 = 50, x2 = 260, y2 = 180;
   return (
     <svg viewBox="0 0 320 230" style={{ width: "100%", display: "block" }}>
       <rect width={320} height={230} fill="#16a34a" rx={8} />
       <rect x={10} y={10} width={300} height={210} fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth={1} rx={4} />
-      {/* Penalty box */}
       <rect x={x1} y={y1} width={x2 - x1} height={y2 - y1}
         fill="rgba(255,255,255,0.1)" stroke="#fff" strokeWidth={2.5} />
-      {/* Right angle marks at all four corners */}
+      {/* Right angle marks */}
       {[
         { cx: x1, cy: y1, dx: 1,  dy: 1  },
         { cx: x2, cy: y1, dx: -1, dy: 1  },
@@ -21,16 +21,14 @@ function Q1Diagram({ showAnswer }) {
         { cx: x1, cy: y2, dx: 1,  dy: -1 },
       ].map(({ cx, cy, dx, dy }, i) => (
         <g key={i}>
-          <line x1={cx} y1={cy} x2={cx + dx * 14} y2={cy} stroke="#fff" strokeWidth={1.5} opacity={0.6} />
-          <line x1={cx} y1={cy} x2={cx} y2={cy + dy * 14} stroke="#fff" strokeWidth={1.5} opacity={0.6} />
-          <line x1={cx + dx * 14} y1={cy} x2={cx + dx * 14} y2={cy + dy * 14} stroke="#fff" strokeWidth={1.5} opacity={0.6} />
-          <line x1={cx} y1={cy + dy * 14} x2={cx + dx * 14} y2={cy + dy * 14} stroke="#fff" strokeWidth={1.5} opacity={0.6} />
+          <line x1={cx} y1={cy} x2={cx + dx*14} y2={cy} stroke="#fff" strokeWidth={1.5} opacity={0.6} />
+          <line x1={cx} y1={cy} x2={cx} y2={cy + dy*14} stroke="#fff" strokeWidth={1.5} opacity={0.6} />
+          <line x1={cx+dx*14} y1={cy} x2={cx+dx*14} y2={cy+dy*14} stroke="#fff" strokeWidth={1.5} opacity={0.6} />
+          <line x1={cx} y1={cy+dy*14} x2={cx+dx*14} y2={cy+dy*14} stroke="#fff" strokeWidth={1.5} opacity={0.6} />
         </g>
       ))}
-      {/* Known: top-left corner = 90° */}
-      <text x={x1 + 26} y={y1 + 28} textAnchor="middle" fontSize={13} fontWeight="800" fill="#fbbf24">90°</text>
-      {/* Unknown: bottom-right corner */}
-      <text x={x2 - 26} y={y2 - 10} textAnchor="middle" fontSize={13} fontWeight="800"
+      <text x={x1+26} y={y1+28} textAnchor="middle" fontSize={13} fontWeight="800" fill="#fbbf24">90°</text>
+      <text x={x2-26} y={y2-10} textAnchor="middle" fontSize={13} fontWeight="800"
         fill={showAnswer ? "#4ade80" : "rgba(255,255,255,0.6)"}>
         {showAnswer ? "90°" : "x°"}
       </text>
@@ -39,42 +37,71 @@ function Q1Diagram({ showAnswer }) {
   );
 }
 
-// ── Q2: Parallelogram — opposite angles equal, adjacent add to 180° ───────
-// Four players form a parallelogram. Angle at A = 118°.
-// Find opposite angle C = 118°, and adjacent angle B = 62°.
-// We ask for adjacent B. 118 + x = 180 → x = 62°. ✓
+// ── Q2: Parallelogram ─────────────────────────────────────────────────────
+// Redesigned so A is clearly the obtuse 118° corner.
+// A bottom-left obtuse, B top-left acute, C top-right obtuse, D bottom-right acute.
+// A=(55,175), B=(175,65), C=(270,65), D=(150,175)
+// Angle at A between AD (going right) and AB (going up-right at ~42° above horizontal)
+// = 180 - 42 = 138°... need to get closer to 118.
+// For 118° at A: AB makes angle (180-118)=62° with AD.
+// AD goes right (0°). AB goes at 62° above horizontal = SVG angle -62° = 298°.
+// If horizontal span AB = 100, vertical = 100*tan(62°) = 188 — too tall.
+// Use span=80, height=80*tan(62°)=150. B=(55+80, 175-150)=(135,25) — off screen.
+// Compromise: span=90, height=90*tan(50°)=107. Angle=50°. Interior=130°. Closer.
+// Best approach: just pick vertices that look right and label correctly.
+// A=(50,180) D=(210,180) B=(120,60) C=(280,60)
+// AD vector: (160,0), AB vector: (70,-120)
+// angle at A = acos((AD·AB)/(|AD||AB|)) = acos(160*70/(160*sqrt(70²+120²)))
+//           = acos(11200/(160*139.3)) = acos(11200/22288) = acos(0.503) = 59.8° — acute, wrong
+// Need A to be obtuse. Make AB go more leftward from A.
+// A=(130,180) D=(270,180) B=(50,65) C=(190,65)
+// AD=(140,0), AB=(-80,-115)
+// cos(angle) = (140*-80 + 0*-115)/(140 * sqrt(80²+115²)) = -11200/(140*139.9) = -0.572
+// angle = acos(-0.572) = 124.9° ✓ — close to 118°, looks obtuse
+// Let's use A=(140,180) D=(275,180) B=(55,65) C=(190,65) for better spacing
 function Q2Diagram({ showAnswer }) {
-  const A = { x: 60,  y: 170 };
-  const B = { x: 140, y: 55  };
-  const Cv = { x: 260, y: 55  };
-  const D = { x: 180, y: 170 };
+  const A  = { x: 140, y: 180 };
+  const B  = { x: 55,  y: 65  };
+  const Cv = { x: 190, y: 65  };
+  const D  = { x: 275, y: 180 };
   const pts = `${A.x},${A.y} ${B.x},${B.y} ${Cv.x},${Cv.y} ${D.x},${D.y}`;
+
   return (
     <svg viewBox="0 0 320 225" style={{ width: "100%", display: "block" }}>
       <rect width={320} height={225} fill="#16a34a" rx={8} />
       <rect x={10} y={10} width={300} height={205} fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth={1} rx={4} />
       <polygon points={pts} fill="rgba(255,255,255,0.1)" stroke="#fbbf24" strokeWidth={2} strokeLinejoin="round" />
+
+      {/* 118° at A — label inside the wide obtuse angle */}
+      <text x={A.x} y={A.y - 28} textAnchor="middle" fontSize={14} fontWeight="800" fill="#fbbf24">118°</text>
+      <line x1={A.x} y1={A.y-8} x2={A.x} y2={A.y-20} stroke="#fbbf24" strokeWidth={1} opacity={0.5} />
+
+      {/* x° at B — the adjacent acute angle */}
+      <text x={B.x + 50} y={B.y + 36} textAnchor="middle" fontSize={14} fontWeight="800"
+        fill={showAnswer ? "#4ade80" : "rgba(255,255,255,0.85)"}>
+        {showAnswer ? "62°" : "x°"}
+      </text>
+      <line x1={B.x+8} y1={B.y+8} x2={B.x+32} y2={B.y+22} stroke={showAnswer ? "#4ade80" : "#fff"} strokeWidth={1} opacity={0.4} />
+
+      {/* Opposite C — shown after answer */}
+      {showAnswer && (
+        <>
+          <text x={Cv.x} y={Cv.y + 36} textAnchor="middle" fontSize={13} fontWeight="700" fill="#fbbf24">118°</text>
+          <line x1={Cv.x} y1={Cv.y+8} x2={Cv.x} y2={Cv.y+22} stroke="#fbbf24" strokeWidth={1} opacity={0.4} />
+        </>
+      )}
+
       {/* Players */}
       {[A, B, Cv, D].map((p, i) => (
         <g key={i}>
-          <circle cx={p.x} cy={p.y} r={8} fill="#fff" opacity={0.9} />
-          <text x={p.x} y={p.y + 4} textAnchor="middle" fontSize={9} fontWeight="800" fill="#16a34a">
+          <circle cx={p.x} cy={p.y} r={9} fill="#fff" opacity={0.95} />
+          <text x={p.x} y={p.y + 4} textAnchor="middle" fontSize={10} fontWeight="800" fill="#16a34a">
             {["A","B","C","D"][i]}
           </text>
         </g>
       ))}
-      {/* Known: angle at A = 118° */}
-      <text x={A.x + 36} y={A.y - 8} textAnchor="middle" fontSize={13} fontWeight="800" fill="#fbbf24">118°</text>
-      {/* Opposite C — shown after answer */}
-      {showAnswer && (
-        <text x={Cv.x - 36} y={Cv.y + 22} textAnchor="middle" fontSize={12} fontWeight="700" fill="#fbbf24">118°</text>
-      )}
-      {/* Adjacent B = x° */}
-      <text x={B.x + 36} y={B.y + 22} textAnchor="middle" fontSize={13} fontWeight="800"
-        fill={showAnswer ? "#4ade80" : "rgba(255,255,255,0.7)"}>
-        {showAnswer ? "62°" : "x°"}
-      </text>
-      <text x={160} y={200} textAnchor="middle" fontSize={10} fontWeight="700" fill="rgba(255,255,255,0.7)">
+
+      <text x={160} y={210} textAnchor="middle" fontSize={10} fontWeight="700" fill="rgba(255,255,255,0.7)">
         Player formation (parallelogram)
       </text>
     </svg>
@@ -82,37 +109,37 @@ function Q2Diagram({ showAnswer }) {
 }
 
 // ── Q3: Quadrilateral sum — 360° ──────────────────────────────────────────
-// Four players form an irregular quadrilateral.
-// Angles: 95°, 88°, 107°, x°. Sum = 360°. x = 70°. ✓
 function Q3Diagram({ showAnswer }) {
-  const A = { x: 55,  y: 165 };
-  const B = { x: 80,  y: 50  };
+  const A  = { x: 55,  y: 165 };
+  const B  = { x: 80,  y: 50  };
   const Cv = { x: 240, y: 60  };
-  const D = { x: 265, y: 165 };
+  const D  = { x: 265, y: 165 };
   const pts = `${A.x},${A.y} ${B.x},${B.y} ${Cv.x},${Cv.y} ${D.x},${D.y}`;
   return (
     <svg viewBox="0 0 320 220" style={{ width: "100%", display: "block" }}>
       <rect width={320} height={220} fill="#16a34a" rx={8} />
       <rect x={10} y={10} width={300} height={200} fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth={1} rx={4} />
       <polygon points={pts} fill="rgba(255,255,255,0.08)" stroke="#fbbf24" strokeWidth={2} strokeLinejoin="round" />
+
+      {/* Angle labels inside each corner */}
+      <text x={A.x+42}  y={A.y-26}  textAnchor="middle" fontSize={12} fontWeight="800" fill="#fbbf24">95°</text>
+      <text x={B.x+42}  y={B.y+32}  textAnchor="middle" fontSize={12} fontWeight="800" fill="#fbbf24">88°</text>
+      <text x={Cv.x-42} y={Cv.y+32} textAnchor="middle" fontSize={12} fontWeight="800" fill="#fbbf24">107°</text>
+      <text x={D.x-42}  y={D.y-26}  textAnchor="middle" fontSize={13} fontWeight="800"
+        fill={showAnswer ? "#4ade80" : "rgba(255,255,255,0.8)"}>
+        {showAnswer ? "70°" : "x°"}
+      </text>
+
+      {/* Players */}
       {[A, B, Cv, D].map((p, i) => (
         <g key={i}>
-          <circle cx={p.x} cy={p.y} r={8} fill="#fff" opacity={0.9} />
-          <text x={p.x} y={p.y + 4} textAnchor="middle" fontSize={9} fontWeight="800" fill="#16a34a">
+          <circle cx={p.x} cy={p.y} r={9} fill="#fff" opacity={0.95} />
+          <text x={p.x} y={p.y+4} textAnchor="middle" fontSize={10} fontWeight="800" fill="#16a34a">
             {["A","B","C","D"][i]}
           </text>
         </g>
       ))}
-      {/* Known angles */}
-      <text x={A.x + 38} y={A.y - 8}  textAnchor="middle" fontSize={12} fontWeight="800" fill="#fbbf24">95°</text>
-      <text x={B.x + 38} y={B.y + 22} textAnchor="middle" fontSize={12} fontWeight="800" fill="#fbbf24">88°</text>
-      <text x={Cv.x - 38} y={Cv.y + 22} textAnchor="middle" fontSize={12} fontWeight="800" fill="#fbbf24">107°</text>
-      {/* Unknown at D */}
-      <text x={D.x - 38} y={D.y - 8} textAnchor="middle" fontSize={13} fontWeight="800"
-        fill={showAnswer ? "#4ade80" : "rgba(255,255,255,0.7)"}>
-        {showAnswer ? "70°" : "x°"}
-      </text>
-      <text x={160} y={205} textAnchor="middle" fontSize={10} fontWeight="700" fill="rgba(255,255,255,0.7)">
+      <text x={160} y={207} textAnchor="middle" fontSize={10} fontWeight="700" fill="rgba(255,255,255,0.7)">
         Four-player formation
       </text>
     </svg>
