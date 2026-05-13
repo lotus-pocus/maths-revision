@@ -71,6 +71,16 @@ const geometry = [
         def: "A line that crosses two or more parallel lines.",
       },
     ],
+    formulas: [
+      { id: "f-straight",   name: "Angles on a straight line",       formula: "Angles = 180°",           plain: "All angles on one side of a straight line add up to 180°",              when: "Any time angles sit on a straight line" },
+      { id: "f-point",      name: "Angles around a point",           formula: "Angles = 360°",           plain: "All angles meeting at a single point add up to 360°",                  when: "Angles that form a full turn around one point" },
+      { id: "f-triangle",   name: "Angles in a triangle",            formula: "Angles = 180°",           plain: "The three interior angles of any triangle always add up to 180°",       when: "Finding a missing angle in any triangle" },
+      { id: "f-quad",       name: "Angles in a quadrilateral",       formula: "Angles = 360°",           plain: "The four interior angles of any quadrilateral always add up to 360°",   when: "Finding a missing angle in any 4-sided shape" },
+      { id: "f-vert-opp",   name: "Vertically opposite angles",      formula: "a = b",                  plain: "When two lines cross, the angles directly opposite each other are equal", when: "Two straight lines crossing — the X shape" },
+      { id: "f-alt",        name: "Alternate angles (Z-angles)",     formula: "a = b",                  plain: "Angles on opposite sides of a transversal between parallel lines are equal", when: "Parallel lines with a transversal — Z shape" },
+      { id: "f-co-int",     name: "Co-interior angles (C-angles)",   formula: "a + b = 180°",           plain: "Angles on the same side of a transversal between parallel lines add to 180°", when: "Parallel lines with a transversal — C shape" },
+      { id: "f-corresp",    name: "Corresponding angles (F-angles)", formula: "a = b",                  plain: "Angles in the same position at each intersection with a transversal are equal", when: "Parallel lines with a transversal — F shape" },
+    ],
     examTip:
       "Always state which angle rule you are using when showing your working — examiners award marks for the reason, not just the number. Write things like 'angles on a straight line = 180°' or 'vertically opposite angles are equal'.",
     commonMistakes: [
@@ -142,6 +152,10 @@ const geometry = [
         term: "Cyclic quadrilateral",
         def: "A quadrilateral whose four vertices all lie on the circumference of a circle.",
       },
+    ],
+    formulas: [
+      { id: "f-diam",  name: "Diameter",      formula: "d = 2r",                    plain: "Diameter is always twice the radius",                           when: "Any circle calculation involving radius and diameter" },
+      { id: "f-tang",  name: "Tangent-radius", formula: "Tangent ⊥ radius = 90°",   plain: "A tangent meets the radius at a right angle — always",         when: "Any question involving a tangent touching a circle" },
     ],
     examTip:
       "In the exam, questions will use these words without defining them. If you see 'tangent', picture the line touching at one point at 90° to the radius. If you see 'chord', picture any line cutting across the circle.",
@@ -218,6 +232,15 @@ const geometry = [
         term: "Perpendicular",
         def: "At exactly 90° to something. A tangent is perpendicular to the radius at the point of contact.",
       },
+    ],
+    formulas: [
+      { id: "f-ct1", name: "Angle at centre",             formula: "Centre angle = 2 × circumference angle", plain: "The angle at the centre is double the angle at the edge, same arc",   when: "You see an angle at O (centre) and one at the edge, same arc" },
+      { id: "f-ct2", name: "Angles in same segment",      formula: "a = b",                                  plain: "Angles touching the same chord from the same side are equal",          when: "Two angles both touching the same chord from the same side" },
+      { id: "f-ct3", name: "Angle in semicircle",         formula: "Angle = 90°",                            plain: "Any angle in a semicircle (on a diameter) is always 90°",             when: "Angle subtended by a diameter at the circumference" },
+      { id: "f-ct4", name: "Cyclic quadrilateral",        formula: "Opposite angles = 180°",                 plain: "Opposite corners of a cyclic quadrilateral add up to 180°",           when: "A 4-sided shape with all corners on the circle" },
+      { id: "f-ct5", name: "Tangent–radius",              formula: "Tangent ⊥ radius = 90°",                 plain: "A tangent always meets the radius at a right angle",                  when: "Any tangent touching the circle" },
+      { id: "f-ct6", name: "Two tangents from a point",   formula: "Length₁ = Length₂",                      plain: "Two tangents from the same external point are always equal length",    when: "Two tangents drawn from a point outside the circle" },
+      { id: "f-ct7", name: "Alternate segment theorem",   formula: "Tangent-chord angle = angle in alt. segment", plain: "The angle between a tangent and chord equals the angle in the opposite segment", when: "A tangent meeting a chord at the circumference" },
     ],
     examTip:
       "In the exam, multi-step circle theorem questions are common — you may need two or three theorems to reach the final answer. Always label intermediate angles clearly and state the theorem used at each step. Look for isosceles triangles formed by two radii — they appear constantly.",

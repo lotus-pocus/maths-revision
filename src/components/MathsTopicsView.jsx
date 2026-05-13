@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useProgress } from "../context/ProgressContext";
 import { useUser } from "../context/UserContext";
 import HospitalExplainer from "./maths/statistics/boxplots/learn/HospitalExplainer";
+import FormulaCard from "./maths/statistics/boxplots/shared/FormulaCard";
 
 const STRAND_COLORS = {
   Statistics:  { border: "#059669", bg: "#ecfdf5", text: "#065f46" },
@@ -132,6 +133,21 @@ function TopicDetail({ topic, onBack, onLaunchInteractive }) {
         </div>
         <h2 style={{ fontSize: "22px", fontWeight: "700", color: "#1a1a2e", margin: "4px 0" }}>{topic.title}</h2>
       </div>
+
+      {topic.formulas?.length > 0 && (
+        <>
+          <SectionHeading>Formulas in this topic</SectionHeading>
+          <div style={{ marginBottom: "8px" }}>
+            {topic.formulas.map(f => (
+              <FormulaCard
+                key={f.id}
+                formula={f}
+                strand={topic.strand}
+              />
+            ))}
+          </div>
+        </>
+      )}
 
       {onLaunchInteractive && (
         <button onClick={onLaunchInteractive}

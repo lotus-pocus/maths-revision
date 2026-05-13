@@ -2,6 +2,11 @@ import { useState } from "react";
 import { C } from "../../../../data/angles_data";
 import AnglesLearn from "./angles_Learn";
 import RealWorldTriangles from "./realworld/RealWorldTriangles";
+import FormulasSheet from "../../statistics/boxplots/FormulasSheet";
+import BuildIt from "./buildit/BuildIt";
+import geometry from "../../../../data/geometry";
+
+const ANGLES_TOPIC = geometry.find(t => t.id === "g1");
 
 // Placeholder components for tabs not yet built
 function ComingSoon({ label }) {
@@ -28,6 +33,7 @@ const TABS = [
   { id: "realworld", label: "🌍 Real World"  },
   { id: "build",     label: "🎯 Build It"    },
   { id: "exam",      label: "📝 Exam"        },
+  { id: "formulas",  label: "🧮 Formulas"    },
 ];
 
 export default function AnglesVisualiser() {
@@ -68,7 +74,7 @@ export default function AnglesVisualiser() {
 
         {/* ── Tab bar ── */}
         <div style={{
-          display: "flex", gap: "6px", marginBottom: "24px",
+          display: "flex", gap: "4px", marginBottom: "24px",
           background: C.surface, borderRadius: "12px", padding: "5px",
           boxShadow: C.shadow, border: `1px solid ${C.border}`,
           margin: "0 16px 24px",
@@ -78,11 +84,11 @@ export default function AnglesVisualiser() {
               key={id}
               onClick={() => switchTab(id)}
               style={{
-                flex: 1, padding: "9px 4px",
+                flex: 1, padding: "9px 2px",
                 background: mode === id ? C.accent : "transparent",
                 color:      mode === id ? "#fff"   : C.muted,
                 border: "none", borderRadius: "8px",
-                fontSize: "12px", fontWeight: "600",
+                fontSize: "11px", fontWeight: "600",
                 cursor: "pointer", transition: "all 0.15s",
               }}
             >
@@ -95,8 +101,15 @@ export default function AnglesVisualiser() {
         <div style={{ padding: "0 16px" }}>
           {mode === "learn"     && <AnglesLearn        key={`learn-${resetKey}`} />}
           {mode === "realworld" && <RealWorldTriangles key={`rw-${resetKey}`}    />}
-          {mode === "build"     && <ComingSoon         label="Build It"           />}
+          {mode === "build"     && <BuildIt            key={`build-${resetKey}`} />}
           {mode === "exam"      && <ComingSoon         label="Exam Practice"      />}
+          {mode === "formulas"  && (
+            <FormulasSheet
+              formulas={ANGLES_TOPIC?.formulas || []}
+              strand="Geometry"
+              accentColor={C.accent}
+            />
+          )}
         </div>
 
       </div>

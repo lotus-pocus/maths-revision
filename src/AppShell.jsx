@@ -9,6 +9,7 @@ import GlossaryTab   from "./tabs/GlossaryTab";
 import SearchTab     from "./tabs/SearchTab";
 import AboutTab      from "./tabs/AboutTab";
 import ReferencesTab from "./tabs/ReferencesTab";
+import FormulasTab   from "./tabs/FormulasTab";
 
 // ── Which topic IDs have a full interactive ───────────────────────────────
 const INTERACTIVE_TOPICS = {
@@ -18,10 +19,11 @@ const INTERACTIVE_TOPICS = {
 
 // ── App-level tab definitions ─────────────────────────────────────────────
 const TABS = [
-  { id: "topics",     label: "Topics",     icon: "📚" },
-  { id: "glossary",   label: "Glossary",   icon: "📖" },
-  { id: "search",     label: "Search",     icon: "🔍" },
-  { id: "about",      label: "About",      icon: "ℹ️"  },
+  { id: "topics",   label: "Topics",   icon: "📚" },
+  { id: "formulas", label: "Formulas", icon: "🧮" },
+  { id: "glossary", label: "Glossary", icon: "📖" },
+  { id: "search",   label: "Search",   icon: "🔍" },
+  { id: "about",    label: "About",    icon: "ℹ️"  },
   { id: "references", label: "References", icon: "📋" },
 ];
 
@@ -106,7 +108,7 @@ export default function AppShell() {
   const [activeTab,    setActiveTab]    = useState("topics");
   const [activeTopic,  setActiveTopic]  = useState(null);
   const [activeFilter, setActiveFilter] = useState("all");
-  const { activeUser }          = useUser();
+  const { activeUser }        = useUser();
   const { getUnderstoodTopics } = useProgress();
 
   const understood = getUnderstoodTopics();
@@ -115,18 +117,6 @@ export default function AppShell() {
   const handleLaunchTopic = (topicId) => {
     const interactive = INTERACTIVE_TOPICS[topicId];
     if (interactive) setActiveTopic(interactive);
-  };
-
-  // ── Called from SearchTab when user taps a result link ────────────────
-  // If the topic has a full interactive, launch it directly.
-  // Otherwise, switch to the Topics tab so the user can find it.
-  const handleGoToTopic = (topicId) => {
-    const interactive = INTERACTIVE_TOPICS[topicId];
-    if (interactive) {
-      setActiveTopic(interactive);
-    } else {
-      setActiveTab("topics");
-    }
   };
 
   // ── Full-screen topic interactives ────────────────────────────────────
@@ -206,8 +196,9 @@ export default function AppShell() {
             onLaunchTopic={handleLaunchTopic}
           />
         </>}
+        {activeTab === "formulas"   && <FormulasTab onNavigateToTopic={(id) => { setActiveTab("topics"); /* topic detail handled inside MathsTopicsView */ }} />}
         {activeTab === "glossary"   && <GlossaryTab />}
-        {activeTab === "search"     && <SearchTab onGoToTopic={handleGoToTopic} />}
+        {activeTab === "search"     && <SearchTab />}
         {activeTab === "about"      && <AboutTab />}
         {activeTab === "references" && <ReferencesTab />}
       </div>

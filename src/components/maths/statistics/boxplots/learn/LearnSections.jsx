@@ -388,6 +388,76 @@ export function SectionExam({ nav, activeGraph, setActiveGraph, showAll, openInt
       <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: "20px", marginTop: "8px" }}>
         <p style={{ fontSize: "11px", fontWeight: "700", color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em", margin: "0 0 12px" }}>Reference — always available</p>
         <GroupedDataReveal />
+        <Reveal label="🔢 Position formula — the shortcut method (seen online & in class)">
+          <p style={{ fontSize: "13px", color: C.text, lineHeight: 1.7, margin: "0 0 12px" }}>
+            Some teachers and websites find quartiles using a <strong>position formula</strong> instead of splitting the list. Both methods are valid — but they can give slightly different answers, which is why you might see a different result online.
+          </p>
+
+          {/* Formula cards */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "8px", marginBottom: "14px" }}>
+            {[
+              { label: "Median", formula: "(n + 1) ÷ 2", color: C.accent },
+              { label: "Q1", formula: "(n + 1) ÷ 4", color: "#7c3aed" },
+              { label: "Q3", formula: "3(n + 1) ÷ 4", color: "#0891b2" },
+            ].map(({ label, formula, color }) => (
+              <div key={label} style={{ background: "#fff", border: `2px solid ${color}30`, borderRadius: "10px", padding: "10px", textAlign: "center" }}>
+                <p style={{ fontSize: "11px", fontWeight: "700", color, margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>{label}</p>
+                <p style={{ fontSize: "12px", fontWeight: "800", color: C.text, margin: 0 }}>{formula}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Worked example — n=25 like the stem & leaf question */}
+          <div style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: "10px", padding: "14px", marginBottom: "12px" }}>
+            <p style={{ fontSize: "12px", fontWeight: "700", color: C.accent, margin: "0 0 10px" }}>
+              📋 Worked example — n = 25 (like a stem &amp; leaf with 25 values)
+            </p>
+            {[
+              {
+                label: "Median position",
+                calc: "(25 + 1) ÷ 2 = 13",
+                result: "→ The 13th value in the ordered list",
+                color: C.accent,
+              },
+              {
+                label: "Q1 position",
+                calc: "(25 + 1) ÷ 4 = 6.5",
+                result: "→ Average the 6th and 7th values",
+                color: "#7c3aed",
+              },
+              {
+                label: "Q3 position",
+                calc: "3 × (25 + 1) ÷ 4 = 19.5",
+                result: "→ Average the 19th and 20th values",
+                color: "#0891b2",
+              },
+            ].map(({ label, calc, result, color }) => (
+              <div key={label} style={{ display: "flex", gap: "10px", marginBottom: "10px", paddingBottom: "10px", borderBottom: `1px solid ${C.border}` }}>
+                <div style={{ width: "8px", borderRadius: "4px", background: color, flexShrink: 0 }} />
+                <div>
+                  <p style={{ fontSize: "12px", fontWeight: "700", color, margin: "0 0 2px" }}>{label}</p>
+                  <p style={{ fontSize: "13px", fontWeight: "800", color: C.text, margin: "0 0 2px", fontFamily: "monospace" }}>{calc}</p>
+                  <p style={{ fontSize: "12px", color: C.muted, margin: 0 }}>{result}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Why methods can differ */}
+          <div style={{ background: "#fffbeb", border: "1px solid #d97706", borderRadius: "8px", padding: "10px 12px", marginBottom: "10px" }}>
+            <p style={{ fontSize: "12px", fontWeight: "700", color: "#92400e", margin: "0 0 4px" }}>⭐ Why do I sometimes get a different answer online?</p>
+            <p style={{ fontSize: "12px", color: "#78350f", lineHeight: 1.6, margin: 0 }}>
+              With certain list sizes, the two methods land on slightly different values. <strong>Neither answer is mathematically wrong</strong> — they use different conventions. However, <strong>Edexcel exam questions are designed around the split method</strong>, and mark schemes include a range of acceptable values to cover both. In practice, both answers would be marked correct. But to be safe in an exam: use the split method.
+            </p>
+          </div>
+
+          <div style={{ background: "#f0fdf4", border: "1px solid #86efac", borderRadius: "8px", padding: "10px 12px" }}>
+            <p style={{ fontSize: "12px", color: "#15803d", margin: 0, lineHeight: 1.6 }}>
+              ✓ <strong>Quick check:</strong> For n = 25, the position formula gives Q1 at position 6.5 — meaning average the 6th and 7th values in your ordered list. Count carefully up the stem &amp; leaf!
+            </p>
+          </div>
+        </Reveal>
+
         <Reveal label="❓ What if there's no middle number? (odd vs even values)">
           <p style={{ fontSize: "13px", color: C.text, lineHeight: 1.7, margin: "0 0 14px" }}>
             For GCSE you can get either an odd or even number of values. The method changes slightly.

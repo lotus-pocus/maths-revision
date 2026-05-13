@@ -115,6 +115,15 @@ const statistics = [
         def: "A value that is much higher or lower than the rest of the data. The IQR is a better measure of spread than range when outliers are present.",
       },
     ],
+    formulas: [
+      { id: "f-median-pos",  name: "Median position",          formula: "(n + 1) ÷ 2",              plain: "Find which position in the ordered list holds the median",          when: "Always — before you can find Q1 or Q3 you need the median position" },
+      { id: "f-q1-split",   name: "Q1 — split method",         formula: "Median of the lower half",  plain: "Put data in order, split below the median, find the middle of that half", when: "Edexcel preferred method — use this in the exam" },
+      { id: "f-q3-split",   name: "Q3 — split method",         formula: "Median of the upper half",  plain: "Put data in order, split above the median, find the middle of that half", when: "Edexcel preferred method — use this in the exam" },
+      { id: "f-q1-pos",     name: "Q1 — position formula",     formula: "(n + 1) ÷ 4",              plain: "Gives the position of Q1 in the ordered list. If decimal, average those two positions", when: "Shortcut — useful for large lists like stem & leaf. Gives same answer as split method most of the time" },
+      { id: "f-q3-pos",     name: "Q3 — position formula",     formula: "3 × (n + 1) ÷ 4",         plain: "Gives the position of Q3 in the ordered list. If decimal, average those two positions", when: "Shortcut — useful for large lists like stem & leaf. Gives same answer as split method most of the time" },
+      { id: "f-iqr",        name: "Interquartile Range (IQR)", formula: "IQR = Q3 − Q1",            plain: "The spread of the middle 50% of the data",                          when: "Always calculate and quote it when comparing two box plots" },
+      { id: "f-range",      name: "Range",                     formula: "Range = Max − Min",         plain: "The total spread of the data",                                      when: "Often asked alongside IQR — but beware outliers making it misleading" },
+    ],
     examTip:
       "In the exam, comparing two box plots is more common than drawing one from scratch. Always comment on BOTH the median (average) AND the IQR (consistency/spread) — and always include the actual numbers. One mark is usually for a comparison with numbers, one for a conclusion ('therefore Class A was more consistent').",
     commonMistakes: [
@@ -206,6 +215,12 @@ const statistics = [
         def: "The shape of a cumulative frequency graph — starts shallow, steepens in the middle, then flattens at the top.",
       },
     ],
+    formulas: [
+      { id: "f-cf-median",  name: "Median from CF graph",  formula: "Read at ½ × n on y-axis",   plain: "Go to half the total frequency on the y-axis, read across to the curve, drop down to x-axis", when: "Reading median from a cumulative frequency graph" },
+      { id: "f-cf-q1",      name: "Q1 from CF graph",      formula: "Read at ¼ × n on y-axis",   plain: "Go to a quarter of the total frequency on the y-axis",               when: "Reading Q1 from a cumulative frequency graph" },
+      { id: "f-cf-q3",      name: "Q3 from CF graph",      formula: "Read at ¾ × n on y-axis",   plain: "Go to three-quarters of the total frequency on the y-axis",          when: "Reading Q3 from a cumulative frequency graph" },
+      { id: "f-cf-iqr",     name: "IQR",                   formula: "IQR = Q3 − Q1",             plain: "The spread of the middle 50% — calculated after reading Q1 and Q3",   when: "Almost always asked after reading a cumulative frequency graph" },
+    ],
     examTip:
       "The most common error is plotting cumulative frequency at the midpoint of the class interval instead of the upper bound. Always use the upper bound. Also make sure your curve starts at (0, 0) and is smooth — not angular.",
     commonMistakes: [
@@ -291,6 +306,11 @@ const statistics = [
         def: "Data that can take any value in a range — like height, weight, time, age. Histograms are used for continuous data.",
       },
     ],
+    formulas: [
+      { id: "f-fd",         name: "Frequency Density",     formula: "FD = Frequency ÷ Class Width",          plain: "What goes on the y-axis of a histogram",                            when: "Drawing a histogram — calculate FD for each bar" },
+      { id: "f-freq",       name: "Frequency from FD",     formula: "Frequency = FD × Class Width",          plain: "Find the number of values in a class from the histogram",            when: "Reading a histogram — finding how many are in a group" },
+      { id: "f-cw",         name: "Class Width",           formula: "Class Width = Frequency ÷ FD",          plain: "Find the width of a bar if you know frequency and FD",               when: "Completing a partly-drawn histogram with missing widths" },
+    ],
     examTip:
       "The formula triangle helps: Frequency = FD × Width, FD = Frequency ÷ Width, Width = Frequency ÷ FD. In the exam you may be given a partly-drawn histogram and asked to complete it, or given a histogram and asked to find a frequency — both use the same formula.",
     commonMistakes: [
@@ -353,6 +373,9 @@ const statistics = [
         def: "When one variable directly causes a change in another. Correlation does not prove causation.",
       },
     ],
+    formulas: [
+      { id: "f-sc-none", name: "No calculation formulas", formula: "Describe strength + direction", plain: "Scatter graphs are about describing correlation, not calculating it", when: "Always use two words: e.g. 'strong positive correlation'" },
+    ],
     examTip:
       "Always describe correlation using TWO words — strength AND direction. 'Strong positive correlation' scores more than just 'positive correlation'. And if asked whether the line of best fit can be used to predict a value outside the data range, the answer is always: yes, but it is unreliable (extrapolation).",
     commonMistakes: [
@@ -409,6 +432,14 @@ const statistics = [
         term: "Midpoint",
         def: "The middle value of a class interval. Used when estimating the mean from grouped data.",
       },
+    ],
+    formulas: [
+      { id: "f-mean",       name: "Mean",                       formula: "Mean = Σx ÷ n",                           plain: "Add all values, divide by how many there are",                        when: "Finding the average of a list of values" },
+      { id: "f-mean-freq",  name: "Mean from frequency table",  formula: "Mean = Σ(x × f) ÷ Σf",                   plain: "Multiply each value by its frequency, add up, divide by total frequency", when: "When given a frequency table" },
+      { id: "f-mean-group", name: "Estimated mean (grouped)",   formula: "Mean ≈ Σ(midpoint × f) ÷ Σf",            plain: "Use class midpoints instead of exact values — gives an estimate",      when: "When data is in groups (e.g. 20–30 marks)" },
+      { id: "f-midpoint",   name: "Class midpoint",             formula: "Midpoint = (lower + upper) ÷ 2",         plain: "The middle value of a class interval",                                 when: "Needed before calculating estimated mean from grouped data" },
+      { id: "f-range-avg",  name: "Range",                      formula: "Range = Max − Min",                       plain: "The total spread of the data",                                         when: "Measuring spread alongside an average" },
+      { id: "f-median-pos2",name: "Median position",            formula: "(n + 1) ÷ 2",                             plain: "Which position in the ordered list is the median",                     when: "Finding the median — order data first" },
     ],
     examTip:
       "If the exam asks 'which average best represents this data?' — look for outliers. If there are extreme values, the median is the better choice and you must say WHY: 'The median is more appropriate because the mean is affected by the outlier of [value].' Always name the outlier.",

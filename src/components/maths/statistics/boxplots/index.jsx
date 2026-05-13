@@ -4,8 +4,11 @@ import Learn from "./Learn";
 import RealWorld from "./RealWorld";
 import BuildIt from "./BuildIt";
 import Exam from "./Exam";
+import FormulasSheet from "./FormulasSheet";
+import statistics from "../../../../data/statistics";
 
 const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
+const BOX_PLOT_TOPIC = statistics.find(t => t.id === "s1");
 
 export default function BoxPlotVisualiser() {
   const [mode, setMode] = useState("learn");
@@ -61,7 +64,7 @@ export default function BoxPlotVisualiser() {
         <div
           style={{
             display: "flex",
-            gap: "6px",
+            gap: "4px",
             marginBottom: "24px",
             background: C.surface,
             borderRadius: "12px",
@@ -71,22 +74,23 @@ export default function BoxPlotVisualiser() {
           }}
         >
           {[
-            { id: "learn", label: "📖 Learn" },
+            { id: "learn",    label: "📖 Learn"     },
             { id: "hospital", label: "🌍 Real World" },
-            { id: "build", label: "🎯 Build It" },
-            { id: "exam", label: "📝 Exam" },
+            { id: "build",    label: "🎯 Build It"   },
+            { id: "exam",     label: "📝 Exam"       },
+            { id: "formulas", label: "🧮 Formulas"   },
           ].map(({ id, label }) => (
             <button
               key={id}
               onClick={() => switchTab(id)}
               style={{
                 flex: 1,
-                padding: "9px 4px",
+                padding: "9px 2px",
                 background: mode === id ? C.accent : "transparent",
                 color: mode === id ? "#fff" : C.muted,
                 border: "none",
                 borderRadius: "8px",
-                fontSize: "12px",
+                fontSize: "11px",
                 fontWeight: "600",
                 cursor: "pointer",
                 transition: "all 0.15s",
@@ -97,10 +101,17 @@ export default function BoxPlotVisualiser() {
           ))}
         </div>
 
-        {mode === "learn" && <Learn key={`learn-${resetKey}`} />}
+        {mode === "learn"    && <Learn    key={`learn-${resetKey}`} />}
         {mode === "hospital" && <RealWorld key={`hospital-${resetKey}`} />}
-        {mode === "build" && <BuildIt key={`build-${resetKey}`} />}
-        {mode === "exam" && <Exam key={`exam-${resetKey}`} />}
+        {mode === "build"    && <BuildIt  key={`build-${resetKey}`} />}
+        {mode === "exam"     && <Exam     key={`exam-${resetKey}`} />}
+        {mode === "formulas" && (
+          <FormulasSheet
+            formulas={BOX_PLOT_TOPIC?.formulas || []}
+            strand="Statistics"
+            accentColor={C.accent}
+          />
+        )}
       </div>
     </div>
   );
